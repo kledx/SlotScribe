@@ -4,11 +4,12 @@ services:
     container_name: slotscribe-web
     restart: always
     ports:
-      - "3101:3101"
+      - "3101:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_DEFAULT_CLUSTER=mainnet-beta
       # 建议在 .env 或外部传入以下敏感变量
+      - PORT=${PORT}
       - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
       - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
       - R2_ENDPOINT=${R2_ENDPOINT}
