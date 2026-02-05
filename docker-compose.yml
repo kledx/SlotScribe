@@ -1,10 +1,11 @@
 services:
   slotscribe:
-    image: ghcr.io/kledx/slotscribe:main
+    image: ghcr.io/kledx/slotscribe:latest
     container_name: slotscribe-web
     restart: always
+    pull_policy: always
     ports:
-      - "3101:3000"
+      - "3101:${PORT:-3000}"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_DEFAULT_CLUSTER=mainnet-beta
