@@ -143,16 +143,16 @@ SlotScribe 提供 **自动记录插件**，让其他团队几乎不用改业务�
 ### 方式 A：包一层 Connection（推荐）
 ```ts
 import { Connection } from "@solana/web3.js";
-import { withSlotScribeConnection } from "./src/plugins/withSlotScribeConnection";
+import { withSlotScribe } from "slotscribe";
 
-const connection = withSlotScribeConnection(new Connection(rpcUrl, "confirmed"), {
+const connection = withSlotScribe(new Connection(rpcUrl, "confirmed"), {
   cluster: "devnet",
-  traceUpload: { kind: "file" }, // 或 { kind:"http", baseUrl:"http://localhost:3000/api/trace" }
+  autoUpload: true,
+  baseUrl: "http://localhost:3000"
 });
 
-// 原本 sendTransaction 仍可用
-// 也可以用增强方法拿到 slotScribe 结果：
-const { signature, slotScribe } = await connection.sendTransactionWithSlotScribe(tx, [payer]);
+// 直接沿用标准 API：
+const signature = await connection.sendTransaction(tx, [payer]);
 ```
 
 ### 方式 B：包一层 Signer（best-effort）
@@ -162,7 +162,7 @@ const { signature, slotScribe } = await connection.sendTransactionWithSlotScribe
 
 ## 插件 Demo
 ```bash
-pnpm demo:plugin
+pnpm examples
 ```
 
 ---

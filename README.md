@@ -154,16 +154,16 @@ SlotScribe includes **auto-recording plugins** so other teams can integrate with
 ### Option A: wrap Connection (recommended)
 ```ts
 import { Connection } from "@solana/web3.js";
-import { withSlotScribeConnection } from "./src/plugins/withSlotScribeConnection";
+import { withSlotScribe } from "slotscribe";
 
-const connection = withSlotScribeConnection(new Connection(rpcUrl, "confirmed"), {
+const connection = withSlotScribe(new Connection(rpcUrl, "confirmed"), {
   cluster: "devnet",
-  traceUpload: { kind: "file" }, // or { kind:"http", baseUrl:"http://localhost:3000/api/trace" }
+  autoUpload: true,
+  baseUrl: "http://localhost:3000"
 });
 
-// You can keep using sendTransaction,
-// or use the enhanced method to receive SlotScribe metadata:
-const { signature, slotScribe } = await connection.sendTransactionWithSlotScribe(tx, [payer]);
+// Use the standard API directly:
+const signature = await connection.sendTransaction(tx, [payer]);
 ```
 
 ### Option B: wrap Signer (best-effort)
@@ -173,7 +173,7 @@ Useful for frameworks that expose only a signer. Note: signers don’t broadcast
 
 ## Plugin demo
 ```bash
-pnpm demo:plugin
+pnpm examples
 ```
 
 ---

@@ -139,6 +139,40 @@ function VerifyContent() {
         }
     };
 
+    const hasSignature = signature.trim().length > 0;
+    const hasHash = hash.trim().length > 0;
+    const hashOnlyMode = !hasSignature && hasHash;
+    const firstReason = result?.result.reasons?.[0] || '';
+    const firstReasonLower = firstReason.toLowerCase();
+    const isNotFound = firstReasonLower.includes('not found');
+    const isHashOnlyNeedsSignature =
+        hashOnlyMode &&
+        !!result &&
+        !result.result.ok &&
+        (firstReasonLower.includes('hash-only lookup') || firstReasonLower.includes('requires a transaction signature'));
+
+    const statusIconClass = result?.result.ok
+        ? 'bg-brand-green'
+        : (isHashOnlyNeedsSignature || isNotFound)
+            ? 'bg-amber-500'
+            : 'bg-red-500';
+    const statusTextClass = result?.result.ok
+        ? 'text-brand-green'
+        : (isHashOnlyNeedsSignature || isNotFound)
+            ? 'text-amber-500'
+            : 'text-red-500';
+    const statusTitle = result?.result.ok
+        ? 'Verified'
+        : isHashOnlyNeedsSignature
+            ? 'Trace Loaded (Need Signature)'
+            : isNotFound
+                ? 'Trace Not Found'
+                : !hasSignature
+                    ? 'Signature Required'
+                    : firstReasonLower.includes('not found on chain')
+                        ? 'Unanchored'
+                        : 'Verification Failed';
+
     return (
         <div className="flex flex-col lg:flex-row gap-px bg-gray-200 overflow-hidden shadow-2xl rounded-3xl border border-gray-200">
             {/* Sidebar */}
@@ -231,7 +265,7 @@ function VerifyContent() {
 
                 <button
                     onClick={() => handleVerify()}
-                    disabled={loading || !signature.trim()}
+                    disabled={loading || (!signature.trim() && !hash.trim())}
                     className="w-full py-4 bg-brand-green hover:bg-brand-green-dark disabled:bg-gray-300 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] text-lg"
                     suppressHydrationWarning
                 >
@@ -247,7 +281,7 @@ function VerifyContent() {
                             <Search className="w-10 h-10 text-gray-300" />
                         </div>
                         <h3 className="text-2xl font-bold text-brand-dark">Ready to Verify</h3>
-                        <p className="text-gray-500 max-w-sm text-sm">Enter a transaction signature on the left to start verifying the agent execution receipt against on-chain data.</p>
+                        <p className="text-gray-500 max-w-sm text-sm">Enter a transaction signature or payload hash to start verification (on-chain verification requires a signature).</p>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-10">
@@ -255,12 +289,12 @@ function VerifyContent() {
                         {result && (
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-6">
-                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${result.result.ok ? 'bg-brand-green' : !signature ? 'bg-amber-500' : 'bg-red-500'} text-white shadow-xl`}>
-                                        {result.result.ok ? <CheckCircle2 className="w-8 h-8" /> : !signature ? <ShieldCheck className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
+                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${statusIconClass} text-white shadow-xl`}>
+                                        {result.result.ok ? <CheckCircle2 className="w-8 h-8" /> : (isHashOnlyNeedsSignature || !hasSignature) ? <ShieldCheck className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <h3 className={`text-3xl font-bold ${result.result.ok ? 'text-brand-green' : !signature || result.result.reasons[0]?.includes('not found') ? 'text-amber-500' : 'text-red-500'}`}>
-                                            {result.result.ok ? 'Verified' : !signature ? 'Trace Loaded' : result.result.reasons[0]?.includes('not found on chain') ? 'Unanchored' : 'Verification Failed'}
+                                        <h3 className={`text-3xl font-bold ${statusTextClass}`}>
+                                            {statusTitle}
                                         </h3>
                                         <div className="flex flex-wrap gap-2 mt-1">
                                             <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-bold text-gray-400 uppercase tracking-widest border border-gray-200">
@@ -361,9 +395,9 @@ function VerifyContent() {
                                 {!result.result.ok && result.result.reasons.length > 0 && (
                                     <div className="xl:col-span-2 p-8 bg-red-50 border border-red-100 rounded-3xl">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <XCircle className={`w-6 h-6 ${result.result.reasons[0]?.includes('not found') ? 'text-amber-600' : 'text-red-600'}`} />
-                                            <h4 className={`${result.result.reasons[0]?.includes('not found') ? 'text-amber-700' : 'text-red-700'} font-bold uppercase tracking-widest text-sm`}>
-                                                {result.result.reasons[0]?.includes('not found on chain') ? 'Anchoring Skipped' : 'Discrepancy Detected'}
+                                            <XCircle className={`w-6 h-6 ${(isNotFound || isHashOnlyNeedsSignature) ? 'text-amber-600' : 'text-red-600'}`} />
+                                            <h4 className={`${(isNotFound || isHashOnlyNeedsSignature) ? 'text-amber-700' : 'text-red-700'} font-bold uppercase tracking-widest text-sm`}>
+                                                {isHashOnlyNeedsSignature ? 'Hash-Only Lookup' : firstReasonLower.includes('not found on chain') ? 'Anchoring Skipped' : 'Discrepancy Detected'}
                                             </h4>
                                         </div>
                                         <ul className="list-disc list-inside text-sm text-red-600 space-y-3 font-medium">

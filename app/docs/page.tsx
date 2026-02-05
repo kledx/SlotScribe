@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -104,7 +104,7 @@ export default function DocsPage() {
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-black mb-4">Infrastructure for the Agentic Era</h3>
                                 <p className="text-white/60 font-medium max-w-xl leading-relaxed">
-                                    SlotScribe is designed to be the "Flight Recorder" for the Next Billion Users—Agents. Whether you are building an autonomous fund, a social agent, or a DeFi automation tool, SlotScribe provides the verifiable proof required for institutional and retail trust.
+                                    SlotScribe is designed to be the "Flight Recorder" for the Next Billion Users鈥擜gents. Whether you are building an autonomous fund, a social agent, or a DeFi automation tool, SlotScribe provides the verifiable proof required for institutional and retail trust.
                                 </p>
                             </div>
                             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/20 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
@@ -144,8 +144,8 @@ export default function DocsPage() {
                                     </pre>
                                 </div>
                                 <div className="flex flex-wrap gap-4 text-sm text-gray-500 font-medium">
-                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">✅ Auto-injects Memo</span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">✅ Auto-uploads Trace</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">鉁?Auto-injects Memo</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">鉁?Auto-uploads Trace</span>
                                 </div>
                             </section>
 
@@ -192,7 +192,8 @@ recorder.syncOnChain(sig, connection);`}
   autoUpload: true
 });
 
-// All subsequent calls automatically recorded
+// Legacy transactions are auto-recorded with memo injection.
+// VersionedTransaction requires manual memo + recorder.syncOnChain(...)
 await connection.sendTransaction(tx, [payer]);`}
                                     </pre>
                                 </div>
@@ -217,16 +218,16 @@ await connection.sendTransaction(tx, [payer]);`}
                             <h2 className="text-2xl font-black text-brand-dark tracking-tight">Package Managers</h2>
                             <div className="flex flex-col gap-4">
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 font-mono text-sm">
-                                    <div className="text-gray-500 mb-2"># Using PNPM</div>
-                                    <code className="text-brand-green">$ pnpm add @slotscribe/sdk</code>
+                                    <div className="text-gray-500 mb-2"># In this repository</div>
+                                    <code className="text-brand-green">$ pnpm install</code>
                                 </div>
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 font-mono text-sm">
-                                    <div className="text-gray-500 mb-2"># Using NPM</div>
-                                    <code className="text-brand-green">$ npm install @slotscribe/sdk</code>
+                                    <div className="text-gray-500 mb-2"># Build SDK bundle (optional)</div>
+                                    <code className="text-brand-green">$ pnpm build:sdk</code>
                                 </div>
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 font-mono text-sm">
-                                    <div className="text-gray-500 mb-2"># Using YARN</div>
-                                    <code className="text-brand-green">$ yarn add @slotscribe/sdk</code>
+                                    <div className="text-gray-500 mb-2"># Run demo</div>
+                                    <code className="text-brand-green">$ pnpm demo</code>
                                 </div>
                             </div>
                         </section>
@@ -236,9 +237,9 @@ await connection.sendTransaction(tx, [payer]);`}
                                 <span className="text-2xl font-black text-brand-green">npx</span>
                             </div>
                             <div>
-                                <h4 className="text-xl font-black mb-2">Can I use npx?</h4>
+                                <h4 className="text-xl font-black mb-2">Local vs Registry</h4>
                                 <p className="text-white/60 text-sm font-medium leading-relaxed">
-                                    `npx` is used for **running tools**, while `npm install` is for **integrating libraries**. Since your Agent needs SlotScribe for recording runtime logic, it must be installed as a local dependency.
+                                    In this repo, use local imports from <code>src/slotscribe</code> or the workspace alias <code>slotscribe</code>. Registry publishing is not part of this repository setup.
                                 </p>
                             </div>
                         </div>
@@ -273,7 +274,7 @@ await connection.sendTransaction(tx, [payer]);`}
                             <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl">
                                 <pre className="p-8 font-mono text-xs md:text-sm leading-relaxed text-gray-300 overflow-x-auto">
                                     <code>
-                                        {`import { SlotScribeRecorder } from '@slotscribe/sdk';
+                                        {`import { SlotScribeRecorder } from 'slotscribe';
 
 // 1. Initialize recorder for an intent
 // cluster: "devnet" | "mainnet-beta"
@@ -373,7 +374,7 @@ recorder.addAuditStep({
                             <h2 className="text-2xl font-black text-brand-dark tracking-tight">Adding Memo to Transaction</h2>
                             <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-8">
                                 <pre className="font-mono text-sm text-gray-300 leading-relaxed">
-                                    {`import { buildMemoIx } from '@slotscribe/sdk';
+                                    {`import { buildMemoIx } from 'slotscribe';
 const tx = new Transaction();
 // ... add your instructions
 
@@ -530,7 +531,7 @@ tx.add(buildMemoIx(\`SS1 payload=\${payloadHash}\`));`}
                                 <h4 className="font-black text-brand-dark">Environment Variable (Base58)</h4>
                                 <p className="text-sm text-gray-500">Perfect for CI/CD or ephemeral cloud environments.</p>
                                 <code className="block p-4 bg-brand-beige rounded-xl text-xs font-mono">
-                                    SOLANA_PRIVATE_KEY="2fbS..." pnpm tsx scripts/test.ts
+                                    SOLANA_PRIVATE_KEY="2fbS..." pnpm tsx scripts/test-online-production.ts --on-chain
                                 </code>
                             </div>
 
@@ -538,7 +539,7 @@ tx.add(buildMemoIx(\`SS1 payload=\${payloadHash}\`));`}
                                 <h4 className="font-black text-brand-dark">Keypair File (JSON)</h4>
                                 <p className="text-sm text-gray-500">Use your existing Solana CLI or local wallet files.</p>
                                 <code className="block p-4 bg-brand-beige rounded-xl text-xs font-mono">
-                                    pnpm tsx scripts/test.ts --keypair ./id.json
+                                    pnpm tsx scripts/test-online-production.ts --on-chain --keypair ./id.json
                                 </code>
                             </div>
                         </div>
@@ -664,3 +665,4 @@ tx.add(buildMemoIx(\`SS1 payload=\${payloadHash}\`));`}
         </div>
     );
 }
+

@@ -8,8 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { traceStore } from '../../../lib/traceStore';
-import { canonicalizeJson } from '../../../src/slotscribe/canonicalize';
-import { sha256Hex } from '../../../src/slotscribe/hash';
+import { validateTraceIntegrity } from '../../../lib/traceIntegrity';
 import type { Trace } from '../../../src/slotscribe/types';
 
 /** CORS headers */
@@ -101,16 +100,13 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. 验证 payloadHash 正确性（重新计算）
-        const payloadToHash = trace.hashedPayload || trace.payload;
-        const canonical = canonicalizeJson(payloadToHash);
-        const computedHash = sha256Hex(canonical);
-
-        if (computedHash.toLowerCase() !== hash) {
+        const integrity = validateTraceIntegrity(trace);
+        if (!integrity.ok) {
             return jsonResponse(
                 {
                     error: 'Hash verification failed',
-                    message: 'Computed hash does not match trace.payloadHash. The trace may be tampered.',
-                    computedHash,
+                    message: `Trace integrity check failed: ${integrity.error}.`,
+                    computedHash: integrity.computedHash,
                     claimedHash: trace.payloadHash
                 },
                 400
@@ -121,13 +117,12 @@ export async function POST(request: NextRequest) {
         const existing = await traceStore.get(hash);
         if (existing) {
             // 如果新旧 trace 的核心 payload 一致，允许覆盖以更新 onChain 或 debug 信息
-            await traceStore.put(hash, trace);
             return jsonResponse(
                 {
                     success: true,
                     hash,
-                    message: 'Trace updated successfully',
-                    updated: true,
+                    message: 'Trace already exists (no overwrite)',
+                    duplicate: true,
                     viewerUrl: `/verify?hash=${hash}${trace.onChain?.signature ? `&sig=${trace.onChain.signature}` : ''}`
                 }
             );

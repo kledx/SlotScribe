@@ -43,3 +43,13 @@ data/traces/*.json
 
 /docs
 /uiux
+
+# Local debug / one-off validation scripts (do not commit)
+scripts/test-trace-integrity.ts
+scripts/test-trace-no-overwrite.ts
+scripts/test-sendtx-finalize-order.ts
+scripts/test-plugin-finalize-order.ts
+scripts/test-plugin-sendraw-no-buildtrace.ts
+scripts/test-versioned-sendtx-rejected.ts
+scripts/test-plugin-versioned-sendtx-rejected.ts
+scripts/test-verify-cluster-validation.ts
