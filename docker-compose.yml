@@ -4,7 +4,7 @@ services:
     container_name: slotscribe-web
     restart: always
     ports:
-      - "3101:3000"
+      - "3101:3101"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_DEFAULT_CLUSTER=mainnet-beta
