@@ -1,6 +1,6 @@
 /**
  * SlotScribe SDK
- * 统一导出
+ * 缁熶竴瀵煎嚭
  */
 
 // Types - Core
@@ -56,11 +56,20 @@ export {
 // Upload helpers
 export {
     uploadTrace,
+    uploadTraceReliable,
+    savePendingTrace,
+    retryPendingUploads,
     saveTraceToFile,
     saveTrace,
 } from './upload';
-export type { UploadResult, UploadOptions } from './upload';
+export type {
+    UploadResult,
+    UploadOptions,
+    ReliableUploadOptions,
+    RetryPendingResult,
+} from './upload';
 
 // Plugins
 export { withSlotScribe } from './plugin';
 export type { SlotScribePluginOptions } from './plugin';
+

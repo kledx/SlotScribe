@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SlotScribeRecorder - Trace 璁板綍鍣?
  * 鐢ㄤ簬璁板綍 Agent 鎿嶄綔杞ㄨ抗骞惰绠?payloadHash
  */
@@ -21,7 +21,7 @@ import type {
 import { normalizeCluster, buildMemoIx, MEMO_PROGRAM_ID } from './solana';
 import { canonicalizeJson } from './canonicalize';
 import { sha256Hex } from './hash';
-import { uploadTrace } from './upload';
+import { uploadTraceReliable } from './upload';
 import type {
     Connection,
     Transaction,
@@ -484,7 +484,14 @@ export class SlotScribeRecorder {
                 this.attachOnChain(signature, { status: 'confirmed' });
 
                 if (options.autoUpload !== false) {
-                    await uploadTrace(this.buildTrace(), { baseUrl: options.baseUrl });
+                    await uploadTraceReliable(this.buildTrace(), {
+                        baseUrl: options.baseUrl,
+                        timeout: 60000,
+                        retries: 3,
+                        retryDelayMs: 800,
+                        retryBackoff: 2,
+                        queueOnFailure: false,
+                    });
                 }
             } catch (e) {
                 console.error('[SlotScribe] Background upload failed:', e);
@@ -518,7 +525,14 @@ export class SlotScribeRecorder {
 
                 // 鑷姩涓婁紶
                 if (options.autoUpload !== false) {
-                    await uploadTrace(this.buildTrace(), { baseUrl: options.baseUrl });
+                    await uploadTraceReliable(this.buildTrace(), {
+                        baseUrl: options.baseUrl,
+                        timeout: 60000,
+                        retries: 3,
+                        retryDelayMs: 800,
+                        retryBackoff: 2,
+                        queueOnFailure: false,
+                    });
                 }
             } catch (e) {
                 console.error('[SlotScribe] Background sync failed:', e);
@@ -549,4 +563,6 @@ export const TOKENS = {
     WIF: { mint: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm', symbol: 'WIF', decimals: 6 },
     JUP: { mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', symbol: 'JUP', decimals: 6 },
 } as const;
+
+
 

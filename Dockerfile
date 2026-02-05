@@ -7,7 +7,8 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/sdk/package.json ./packages/sdk/package.json
 RUN pnpm install --frozen-lockfile
 
 # --- Builder Phase ---
@@ -20,7 +21,7 @@ COPY . .
 ARG NEXT_PUBLIC_DEFAULT_CLUSTER
 ENV NEXT_PUBLIC_DEFAULT_CLUSTER=${NEXT_PUBLIC_DEFAULT_CLUSTER}
 
-# Next.js 收集匿名遥测数据。在此处禁用它。
+# Next.js 遥测数据，禁用
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN pnpm build
@@ -51,3 +52,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
+

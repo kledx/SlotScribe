@@ -1,4 +1,4 @@
-name: Docker Build and Publish
+name: Viewer Docker Build and Publish
 
 on:
   push:
