@@ -2,6 +2,19 @@
   "name": "slotscribe",
   "version": "0.1.0",
   "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "type": "module",
   "scripts": {
     "dev": "next dev",
@@ -12,12 +25,14 @@
     "demo:tx": "tsx scripts/demo-transfer.ts",
     "verify": "tsx scripts/verify.ts",
     "examples": "tsx scripts/examples-complex-tx.ts",
-    "mcp": "tsx src/mcp/server.ts"
+    "mcp": "tsx src/mcp/server.ts",
+    "build:sdk": "tsup src/slotscribe/index.ts --format cjs,esm --dts --clean --tsconfig tsconfig.build.json"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.983.0",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@solana/web3.js": "^1.98.0",
+    "bs58": "^6.0.0",
     "json-canonicalize": "^1.0.6",
     "lucide-react": "^0.563.0",
     "next": "^15.1.0",
@@ -26,6 +41,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/bs58": "^5.0.0",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
@@ -33,6 +49,7 @@
     "concurrently": "^9.1.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "wait-on": "^8.0.0"

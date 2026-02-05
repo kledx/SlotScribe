@@ -25,6 +25,9 @@
             "src/*": [
                 "src/*"
             ],
+            "slotscribe": [
+                "src/slotscribe/index.ts"
+            ],
             "lib/*": [
                 "lib/*"
             ]

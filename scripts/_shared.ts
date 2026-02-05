@@ -44,6 +44,7 @@ export function getConfig() {
         traceFile: args.trace,
         to: args.to,
         sol: parseFloat(args.sol || '0.01'),
+        keypair: args.keypair || args.k || process.env.SOLANA_KEYPAIR_PATH,
     };
 }
 

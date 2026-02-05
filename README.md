@@ -17,6 +17,7 @@ SlotScribe is a **verifiable execution recorder**:
 SlotScribe supports multiple integration paths for modern AI Agents:
 - **[MCP Server](file:///e:/work_space/SlotScribe/docs/MCP_Quick_Start.md)**: Native Model Context Protocol support for Claude Desktop and MCP-enabled agents.
 - **[1-line SDK Plugin](file:///e:/work_space/SlotScribe/docs/AI_Agent_Quick_Start.md)**: Easy integration for TypeScript/Node.js agents.
+- **[Production & Mainnet Testing](file:///e:/work_space/SlotScribe/docs/Production_Testing_and_Wallet_Import.md)**: Guide for mainnet verification and private key import.
 - **[Public API](https://slotscribe.xyz/api/trace)**: REST API for agents in any language (Python, Rust, etc.).
 
 ---
@@ -102,6 +103,20 @@ Open the Viewer link:
 - tx summary + trace timeline
 
 > The demo airdrops a temporary devnet keypair and sends a transfer tx with a Memo anchor.
+
+### Production Test (Online)
+Test the full end-to-end flow with our production servers at `https://slotscribe.xyz`.
+
+```bash
+# 1. Devnet Test (safe, free)
+pnpm tsx scripts/test-online-production.ts --on-chain
+
+# 2. Mainnet Test (requires real SOL)
+pnpm tsx scripts/test-online-production.ts --cluster mainnet-beta --on-chain
+```
+
+- **Custom Keypair**: Use `--keypair ./path.json` or `$env:SOLANA_PRIVATE_KEY`.
+- **Self-Transfer**: If `--to` is omitted, funds are sent back to yourself (safest for mainnet).
 
 ---
 

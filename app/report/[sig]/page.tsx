@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, use } from 'react';
+import { useState, useEffect, Suspense, use, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
     CheckCircle,
@@ -12,7 +12,6 @@ import {
     ShieldCheck,
     ExternalLink,
     Search,
-    Download,
     Share2
 } from 'lucide-react';
 import Link from 'next/link';
@@ -64,6 +63,9 @@ function ReportContent({ signature }: { signature: string }) {
     const [loading, setLoading] = useState(true);
     const [result, setResult] = useState<VerifyResponse | null>(null);
     const [isTechnicalVisible, setIsTechnicalVisible] = useState(true);
+    const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+    const [isCopyToastVisible, setIsCopyToastVisible] = useState(false);
+    const shareMenuRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -81,7 +83,10 @@ function ReportContent({ signature }: { signature: string }) {
                     }
                 }
 
-                let url = `/api/verify?signature=${signature}&cluster=${cluster}`;
+                let url = `/api/verify?cluster=${cluster}`;
+                if (signature !== 'unverified') {
+                    url += `&signature=${signature}`;
+                }
                 if (hash) url += `&hash=${hash}`;
                 if (rpcUrl) url += `&rpcUrl=${encodeURIComponent(rpcUrl)}`;
 
@@ -97,8 +102,76 @@ function ReportContent({ signature }: { signature: string }) {
         fetchData();
     }, [signature, searchParams]);
 
+    useEffect(() => {
+        if (!isShareMenuOpen) return;
+
+        const handleOutsideClick = (event: MouseEvent) => {
+            const target = event.target as Node | null;
+            if (shareMenuRef.current && target && !shareMenuRef.current.contains(target)) {
+                setIsShareMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, [isShareMenuOpen]);
+
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
+    };
+
+    const buildShareText = () => {
+        const shareUrl = window.location.href;
+        const cluster = (searchParams.get('cluster') || DEFAULT_CLUSTER).toUpperCase();
+        const statusLabel = result?.result.ok ? 'VERIFIED' : signature === 'unverified' ? 'RECORDED' : 'FLAGGED';
+        const shortSig = signature === 'unverified'
+            ? 'unverified-trace'
+            : `${signature.slice(0, 8)}...${signature.slice(-8)}`;
+        const text = `SlotScribe report — ${statusLabel} on ${cluster} • ${shortSig}`;
+        return { shareUrl, text };
+    };
+
+    const copyReportLink = () => {
+        const { shareUrl } = buildShareText();
+        copyToClipboard(shareUrl);
+        setIsShareMenuOpen(false);
+        setIsCopyToastVisible(true);
+        window.setTimeout(() => setIsCopyToastVisible(false), 2000);
+    };
+
+    const shareToX = () => {
+        const { shareUrl, text } = buildShareText();
+        const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+        setIsShareMenuOpen(false);
+        const win = window.open(tweetUrl, '_blank', 'noopener,noreferrer');
+        if (!win) {
+            setIsCopyToastVisible(true);
+            window.setTimeout(() => setIsCopyToastVisible(false), 2000);
+        }
+    };
+
+    const downloadTraceJson = () => {
+        if (!result?.trace) return;
+        const payload = {
+            signature: signature === 'unverified' ? undefined : signature,
+            cluster: searchParams.get('cluster') || DEFAULT_CLUSTER,
+            onChainHash: result.onChainHash,
+            computedHash: result.result.computedHash,
+            trace: result.trace,
+            txSummary: result.txSummary,
+            exportedAt: new Date().toISOString(),
+        };
+        const json = JSON.stringify(payload, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        const safeSig = signature === 'unverified' ? 'unverified' : signature.slice(0, 12);
+        anchor.href = url;
+        anchor.download = `slotscribe-trace-${safeSig}.json`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.URL.revokeObjectURL(url);
     };
 
     if (loading) {
@@ -136,29 +209,51 @@ function ReportContent({ signature }: { signature: string }) {
                         </div>
                     )}
                     <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white px-5 py-1.5 rounded-full border border-gray-100 shadow-xl whitespace-nowrap">
-                        <span className={`text-sm font-black uppercase tracking-[0.2em] ${result.result.ok ? 'text-brand-green' : 'text-red-500'}`}>
-                            {result.result.ok ? 'TRUSTED EXECUTION' : 'INVALID STATE'}
+                        <span className={`text-sm font-black uppercase tracking-[0.2em] ${result.result.ok ? 'text-brand-green' : signature === 'unverified' ? 'text-amber-500' : 'text-red-500'}`}>
+                            {result.result.ok ? 'TRUSTED EXECUTION' : signature === 'unverified' ? 'TRACE RECORDED' : 'INVALID STATE'}
                         </span>
                     </div>
                 </div>
                 <h1 className="text-2xl font-bold mt-2 text-center text-brand-dark max-w-2xl leading-relaxed">
                     {result.result.ok
                         ? 'This transaction matches the expected state transition anchor.'
-                        : result.result.reasons?.some(r => r.includes('not found'))
-                            ? 'Transaction not found on the selected network.'
-                            : 'Security Alert: This transaction failed cryptographical state verification.'}
+                        : signature === 'unverified'
+                            ? 'This trace has been recorded but not yet anchored on-chain.'
+                            : result.result.reasons?.some(r => r.includes('not found'))
+                                ? 'Transaction not found on the selected network.'
+                                : 'Security Alert: This transaction failed cryptographical state verification.'}
                 </h1>
                 <div className="flex items-center gap-4 mt-8">
-                    <button
-                        onClick={() => copyToClipboard(window.location.href)}
-                        className="flex items-center space-x-2 px-8 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-brand-green hover:shadow-md transition-all active:scale-95"
-                    >
-                        <Share2 className="w-4 h-4" />
-                        <span>Share Report</span>
-                    </button>
-                    <button className="p-3 bg-brand-dark text-white rounded-2xl hover:bg-black transition-all shadow-lg active:scale-95">
-                        <Download className="w-5 h-5" />
-                    </button>
+                    <div className="relative" ref={shareMenuRef}>
+                        <button
+                            onClick={() => setIsShareMenuOpen((open) => !open)}
+                            className="flex items-center space-x-2 px-8 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-brand-green hover:shadow-md transition-all active:scale-95"
+                        >
+                            <Share2 className="w-4 h-4" />
+                            <span>Share Report</span>
+                        </button>
+                        {isCopyToastVisible && (
+                            <div className="absolute top-full left-0 mt-2 px-3 py-1.5 rounded-lg bg-white/80 border border-gray-100 text-xs font-semibold text-gray-600 tracking-widest shadow-sm backdrop-blur-md">
+                                LINK COPIED
+                            </div>
+                        )}
+                        {isShareMenuOpen && (
+                            <div className="absolute top-full left-0 mt-3 w-56 bg-white rounded-2xl border border-gray-100 shadow-xl p-2 z-20">
+                                <button
+                                    onClick={copyReportLink}
+                                    className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold text-brand-dark hover:bg-brand-green/10 transition-colors"
+                                >
+                                    Copy Link
+                                </button>
+                                <button
+                                    onClick={shareToX}
+                                    className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold text-brand-dark hover:bg-brand-green/10 transition-colors"
+                                >
+                                    Share to X
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -173,11 +268,11 @@ function ReportContent({ signature }: { signature: string }) {
                             <h3 className="text-3xl font-black text-brand-dark tracking-tight mb-3">
                                 {result.trace?.payload.intent || 'Generic Action'}
                             </h3>
-                            <div className="flex items-center gap-2 group cursor-pointer" onClick={() => copyToClipboard(signature)}>
-                                <span className="text-xs font-mono text-gray-400 bg-gray-100/50 px-3 py-1 rounded-lg border border-gray-100 group-hover:border-brand-green/30 transition-all">
-                                    SIG: {signature.slice(0, 16)}...{signature.slice(-16)}
+                            <div className="flex items-center gap-2 group cursor-pointer" onClick={() => signature !== 'unverified' && copyToClipboard(signature)}>
+                                <span className={`text-xs font-mono ${signature === 'unverified' ? 'text-amber-600 bg-amber-50 border-amber-100' : 'text-gray-400 bg-gray-100/50 border-gray-100'} px-3 py-1 rounded-lg border group-hover:border-brand-green/30 transition-all`}>
+                                    {signature === 'unverified' ? 'TX: PENDING ANCHOR' : `SIG: ${signature.slice(0, 16)}...${signature.slice(-16)}`}
                                 </span>
-                                <Copy className="w-3 h-3 text-gray-300 group-hover:text-brand-green" />
+                                {signature !== 'unverified' && <Copy className="w-3 h-3 text-gray-300 group-hover:text-brand-green" />}
                             </div>
                         </div>
                         <div className="text-right flex flex-col items-end gap-3">
@@ -185,15 +280,17 @@ function ReportContent({ signature }: { signature: string }) {
                                 <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Block Cluster</p>
                                 <p className="text-lg font-bold text-brand-green">{result.trace?.payload.txSummary.cluster.toUpperCase() || searchParams.get('cluster')?.toUpperCase() || 'DEVNET'}</p>
                             </div>
-                            <a
-                                href={`https://explorer.solana.com/tx/${signature}?cluster=${searchParams.get('cluster') || 'devnet'}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-green hover:border-brand-green/30 transition-all shadow-sm"
-                            >
-                                <ExternalLink className="w-3 h-3" />
-                                SOLANA EXPLORER
-                            </a>
+                            {signature !== 'unverified' && (
+                                <a
+                                    href={`https://explorer.solana.com/tx/${signature}?cluster=${searchParams.get('cluster') || 'devnet'}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-green hover:border-brand-green/30 transition-all shadow-sm"
+                                >
+                                    <ExternalLink className="w-3 h-3" />
+                                    SOLANA EXPLORER
+                                </a>
+                            )}
                         </div>
                     </div>
 
@@ -304,7 +401,11 @@ function ReportContent({ signature }: { signature: string }) {
                                 ))}
                                 <div className="mt-8 pt-8 border-t border-brand-dark/5 text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center gap-4">
                                     <span className="italic font-medium">SlotScribe Verifiable Trace Engine v1.0.4 - Deterministic Audit Mode</span>
-                                    <button className="flex items-center space-x-2 px-4 py-2 bg-brand-dark text-white rounded-xl hover:bg-black transition-all">
+                                    <button
+                                        onClick={downloadTraceJson}
+                                        disabled={!result.trace}
+                                        className="flex items-center space-x-2 px-4 py-2 bg-brand-dark text-white rounded-xl hover:bg-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
                                         <span>Download Trace JSON</span>
                                         <ExternalLink className="w-3 h-3" />
                                     </button>
@@ -324,10 +425,10 @@ function ReportContent({ signature }: { signature: string }) {
                 <div className="p-10">
                     <div className="relative group">
                         <div className="p-6 bg-brand-dark rounded-2xl font-mono text-sm text-brand-green overflow-x-auto border border-white/5 shadow-2xl">
-                            <span className="text-brand-green/40 mr-2">$</span> pnpm verify --sig {signature} --cluster {searchParams.get('cluster') || 'mainnet-beta'}
+                            <span className="text-brand-green/40 mr-2">$</span> pnpm verify {signature !== 'unverified' ? `--sig ${signature}` : `--hash ${searchParams.get('hash')}`} --cluster {searchParams.get('cluster') || 'mainnet-beta'}
                         </div>
                         <button
-                            onClick={() => copyToClipboard(`pnpm verify --sig ${signature} --cluster ${searchParams.get('cluster') || 'mainnet-beta'}`)}
+                            onClick={() => copyToClipboard(`pnpm verify ${signature !== 'unverified' ? `--sig ${signature}` : `--hash ${searchParams.get('hash')}`} --cluster ${searchParams.get('cluster') || 'mainnet-beta'}`)}
                             className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-brand-green text-white rounded-xl transition-all opacity-0 group-hover:opacity-100 shadow-xl active:scale-90"
                         >
                             <Copy className="w-4 h-4" />

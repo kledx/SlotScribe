@@ -15,7 +15,7 @@ import type { SolanaCluster, Trace, VerifyResult, ParsedTxSummary } from '../src
 
 export interface VerifyOptions {
     cluster: SolanaCluster;
-    signature: string;
+    signature?: string;
     hash?: string;
     rpcUrl?: string;
 }
@@ -52,6 +52,26 @@ export async function verifyTxWithTrace(options: VerifyOptions): Promise<VerifyR
     }
 
     // Step 1: 获取链上交易 (如果缓存未命中或未传 hash)
+    if (!signature) {
+        // 如果没有 signature，说明只是想查看 Trace 详情，而不是验证链上数据
+        if (hash) {
+            const trace = await traceStore.get(hash);
+            if (!trace) {
+                return {
+                    result: { ok: false, reasons: [`Trace found for hash: ${hash}, but no on-chain signature provided for verification.`] }
+                };
+            }
+            return {
+                result: trace.verifiedResult || { ok: false, reasons: ['Trace loaded but not verified on-chain'] },
+                trace,
+                txSummary: trace.cachedTxSummary,
+            };
+        }
+        return {
+            result: { ok: false, reasons: ['Missing signature or hash'] }
+        };
+    }
+
     const connection = getConnection(cluster, rpcUrl);
     console.log(`[Verifier] Fetching transaction ${signature} from ${cluster}...`);
     const txResponse = await connection.getParsedTransaction(signature, {
@@ -104,7 +124,7 @@ export async function verifyTxWithTrace(options: VerifyOptions): Promise<VerifyR
             result: {
                 ok: false,
                 expectedHash: onChainHash,
-                reasons: [`Trace file not found in data center for hash: ${hashToUse}. Please ensure the agent has uploaded the trace.`],
+                reasons: [`The on-chain anchor exists, but the corresponding off-chain Trace file has not been uploaded to the data center yet.`],
             },
             memoRaw,
             onChainHash,

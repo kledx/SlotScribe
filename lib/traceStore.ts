@@ -86,6 +86,7 @@ export class R2TraceStore implements TraceStore {
     private listCache: Array<{ hash: string, trace: Trace }> | null = null;
     private lastListFetch = 0;
     private traceCache = new Map<string, Trace>();
+    private readonly MAX_CACHE_SIZE = 100; // 限制内存在 100 条 trace 以内
 
     constructor() {
         this.s3 = new S3Client({
@@ -116,6 +117,11 @@ export class R2TraceStore implements TraceStore {
             if (body) {
                 const trace = JSON.parse(body) as Trace;
                 // Add to cache (Trace is immutable by hash)
+                if (this.traceCache.size >= this.MAX_CACHE_SIZE) {
+                    // 简单粗暴：如果满了就删掉第一个（Map 保持插入顺序）
+                    const firstKey = this.traceCache.keys().next().value;
+                    if (firstKey) this.traceCache.delete(firstKey);
+                }
                 this.traceCache.set(hash, trace);
                 return trace;
             }
@@ -137,6 +143,10 @@ export class R2TraceStore implements TraceStore {
             await this.s3.send(command);
 
             // Update cache
+            if (this.traceCache.size >= this.MAX_CACHE_SIZE && !this.traceCache.has(hash)) {
+                const firstKey = this.traceCache.keys().next().value;
+                if (firstKey) this.traceCache.delete(firstKey);
+            }
             this.traceCache.set(hash, trace);
             this.listCache = null; // Invalidate list cache
 

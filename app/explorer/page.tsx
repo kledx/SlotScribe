@@ -105,7 +105,7 @@ export default function ExplorerPage() {
                         {filteredTraces.map((trace) => (
                             <Link
                                 key={trace.hash}
-                                href={trace.signature ? `/report/${trace.signature}?cluster=${trace.cluster}&hash=${trace.hash}` : `/verify?hash=${trace.hash}&cluster=${trace.cluster}`}
+                                href={trace.signature ? `/report/${trace.signature}?cluster=${trace.cluster}&hash=${trace.hash}` : `/report/unverified?hash=${trace.hash}&cluster=${trace.cluster}`}
                                 className="group block glass-card rounded-3xl border border-white/20 bg-white/40 hover:bg-white/60 transition-all p-6 md:p-8 hover:shadow-2xl hover:-translate-y-1"
                             >
                                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -139,7 +139,7 @@ export default function ExplorerPage() {
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2 text-brand-green font-black text-sm uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-                                            {trace.signature ? 'View Report' : 'Verify Proof'}
+                                            View Report
                                             <ArrowUpRight className="w-4 h-4" />
                                         </div>
                                     </div>

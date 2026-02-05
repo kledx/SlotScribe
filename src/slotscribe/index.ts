@@ -60,3 +60,7 @@ export {
     saveTrace,
 } from './upload';
 export type { UploadResult, UploadOptions } from './upload';
+
+// Plugins
+export { withSlotScribe } from './plugin';
+export type { SlotScribePluginOptions } from './plugin';

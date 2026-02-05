@@ -18,12 +18,22 @@ import type {
     MemeCoinDetails,
     TokenInfo,
 } from './types';
+import { normalizeCluster, buildMemoIx } from './solana';
 import { canonicalizeJson } from './canonicalize';
 import { sha256Hex } from './hash';
+import { uploadTrace } from './upload';
+import type {
+    Connection,
+    Transaction,
+    VersionedTransaction,
+    Signer,
+    SendOptions,
+    TransactionSignature
+} from '@solana/web3.js';
 
 export interface RecorderOptions {
     intent: string;
-    cluster: SolanaCluster;
+    cluster: SolanaCluster | string;
 }
 
 export class SlotScribeRecorder {
@@ -34,6 +44,7 @@ export class SlotScribeRecorder {
     private createdAt: string;
 
     constructor(options: RecorderOptions) {
+        const cluster = normalizeCluster(options.cluster);
         this.createdAt = new Date().toISOString();
         this.payload = {
             nonce: Math.random().toString(36).substring(2, 15) + Date.now().toString(36),
@@ -41,7 +52,7 @@ export class SlotScribeRecorder {
             plan: { steps: [] },
             toolCalls: [],
             txSummary: {
-                cluster: options.cluster,
+                cluster: cluster,
                 feePayer: '',
                 programIds: [],
             },
@@ -413,13 +424,120 @@ export class SlotScribeRecorder {
             // 尝试 JSON 序列化，如果失败则返回字符串表示
             const str = JSON.stringify(output);
             // 限制大小
-            if (str.length > 10000) {
-                return { _truncated: true, preview: str.slice(0, 500) + '...' };
+            if (str.length > 100000) {
+                return { _truncated: true, preview: str.slice(0, 1000) + '...' };
             }
             return JSON.parse(str);
         } catch {
             return { _type: typeof output, _string: String(output).slice(0, 500) };
         }
+    }
+
+    /**
+     * 【推荐】显式发送并锚定交易
+     * 
+     * 自动完成：注入 Memo -> 发送交易 -> 上传 Trace
+     */
+    async sendTransaction(
+        connection: Connection,
+        transaction: Transaction | VersionedTransaction,
+        signers: Signer[],
+        options: {
+            sendOptions?: SendOptions;
+            autoUpload?: boolean;
+            baseUrl?: string;
+        } = {}
+    ): Promise<TransactionSignature> {
+        // 1. 注入 Memo (对于 Legacy Transaction)
+        const hash = this.finalizePayloadHash();
+        const memoIx = buildMemoIx(`SS1 payload=${hash}`);
+
+        if (transaction instanceof (await import('@solana/web3.js')).Transaction) {
+            // Legacy Transaction
+            transaction.add(memoIx);
+
+            // 自动填充一部分 TxSummary
+            if (!this.payload.txSummary.feePayer) {
+                this.payload.txSummary.feePayer = transaction.feePayer?.toBase58() || signers[0]?.publicKey.toBase58() || '';
+            }
+            if (this.payload.txSummary.programIds.length === 0) {
+                this.payload.txSummary.programIds = transaction.instructions.map(ix => ix.programId.toBase58());
+            }
+        } else {
+            // VersionedTransaction
+            // 注意：如果交易已经签名，注入 Memo 会导致签名无效。
+            // 这里我们记录信息，但对于已经编码的消息，注入需要重新构建
+            if (!this.payload.txSummary.feePayer) {
+                this.payload.txSummary.feePayer = transaction.message.staticAccountKeys[0]?.toBase58() || signers[0]?.publicKey.toBase58() || '';
+            }
+            if (this.payload.txSummary.programIds.length === 0) {
+                const staticKeys = transaction.message.staticAccountKeys;
+                this.payload.txSummary.programIds = transaction.message.compiledInstructions.map(
+                    ix => staticKeys[ix.programIdIndex]?.toBase58() || 'unknown'
+                );
+            }
+        }
+
+        // 2. 发送交易
+        let signature: TransactionSignature;
+        if ('instructions' in transaction) {
+            // Legacy Transaction
+            signature = await connection.sendTransaction(transaction, signers, options.sendOptions);
+        } else {
+            // VersionedTransaction
+            signature = await connection.sendTransaction(transaction, options.sendOptions);
+        }
+        // 3. 后台跟进逻辑（确认并上传）
+        const followUp = async () => {
+            try {
+                // 等待确认
+                await connection.confirmTransaction(signature, 'confirmed');
+                this.attachOnChain(signature, { status: 'confirmed' });
+
+                // 自动上传
+                if (options.autoUpload !== false) {
+                    await uploadTrace(this.buildTrace(), { baseUrl: options.baseUrl });
+                }
+            } catch (e) {
+                console.error('[SlotScribe] Background upload failed:', e);
+            }
+        };
+
+        followUp(); // 异步执行，不阻塞主线程返回 signature
+
+        return signature;
+    }
+
+    /**
+     * 【通用助手】同步已发送的交易到 SlotScribe
+     * 
+     * 适用于用户使用 Anchor, Jupiter 或其他第三方 SDK 发送交易的场景。
+     * 在后台等待交易确认后自动上传审计报告。
+     */
+    syncOnChain(
+        signature: TransactionSignature,
+        connection: Connection,
+        options: {
+            autoUpload?: boolean;
+            baseUrl?: string;
+        } = {}
+    ): void {
+        const followUp = async () => {
+            try {
+                // 等待确认
+                await connection.confirmTransaction(signature, 'confirmed');
+                this.attachOnChain(signature, { status: 'confirmed' });
+
+                // 自动上传
+                if (options.autoUpload !== false) {
+                    await uploadTrace(this.buildTrace(), { baseUrl: options.baseUrl });
+                }
+            } catch (e) {
+                console.error('[SlotScribe] Background sync failed:', e);
+            }
+        };
+
+        followUp(); // 必须是异步的，不影响用户主业务流
     }
 }
 

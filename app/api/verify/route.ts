@@ -14,13 +14,13 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     const cluster = (searchParams.get('cluster') || DEFAULT_CLUSTER) as SolanaCluster;
-    const signature = searchParams.get('signature');
+    const signature = searchParams.get('signature') || undefined;
     const hash = searchParams.get('hash') || undefined;
     const rpcUrl = searchParams.get('rpcUrl') || undefined;
 
-    if (!signature) {
+    if (!signature && !hash) {
         return NextResponse.json(
-            { error: 'Missing required parameter: signature' },
+            { error: 'Missing required parameter: signature or hash' },
             { status: 400 }
         );
     }

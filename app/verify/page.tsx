@@ -9,9 +9,10 @@ import {
     CheckCircle2,
     XCircle,
     Share2,
+    ShieldCheck,
+    ChevronDown,
     ChevronUp,
     Copy,
-    Twitter,
     ExternalLink,
     FileText
 } from 'lucide-react';
@@ -96,31 +97,33 @@ function VerifyContent() {
         if (urlHash) setHash(urlHash);
         if (urlRpc) setRpcUrl(urlRpc);
 
-        if (urlSig) {
-            // 注意：handleVerify 依赖最新的 state，如果这里直接调用可能用的是旧的，
-            // 建议将 handleVerify 逻辑重构或在这里传入参数
-            // 简单处理：在这里我们只同步 UI，用户点击或后续更新会触发
+        if (urlSig || urlHash) {
+            // 如果 URL 中有 sig 或 hash，触发验证流程
+            setTimeout(() => handleVerify(urlSig || '', urlHash || ''), 100);
         }
     }, [searchParams]);
 
     // 监听 cluster 变化重新验证 (可选，但为了体验一致)
     useEffect(() => {
-        if (signature && !result && !loading) {
+        if ((signature || hash) && !result && !loading) {
             handleVerify();
         }
-    }, [cluster, signature]);
+    }, [cluster, signature, hash]);
 
-    const handleVerify = async () => {
-        if (!signature.trim()) return;
+    const handleVerify = async (forceSig?: string, forceHash?: string) => {
+        const sigToUse = forceSig !== undefined ? forceSig : signature;
+        const hashToUse = forceHash !== undefined ? forceHash : hash;
+
+        if (!sigToUse.trim() && !hashToUse.trim()) return;
         setLoading(true);
         setResult(null);
 
         try {
             const params = new URLSearchParams({
                 cluster,
-                signature: signature.trim(),
             });
-            if (hash.trim()) params.set('hash', hash.trim());
+            if (sigToUse.trim()) params.set('signature', sigToUse.trim());
+            if (hashToUse.trim()) params.set('hash', hashToUse.trim());
             if (rpcSource === 'custom' && rpcUrl.trim()) params.set('rpcUrl', rpcUrl.trim());
 
             const response = await fetch(`/api/verify?${params}`);
@@ -227,7 +230,7 @@ function VerifyContent() {
                 </div>
 
                 <button
-                    onClick={handleVerify}
+                    onClick={() => handleVerify()}
                     disabled={loading || !signature.trim()}
                     className="w-full py-4 bg-brand-green hover:bg-brand-green-dark disabled:bg-gray-300 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] text-lg"
                     suppressHydrationWarning
@@ -252,12 +255,12 @@ function VerifyContent() {
                         {result && (
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-6">
-                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${result.result.ok ? 'bg-brand-green' : 'bg-red-500'} text-white shadow-xl`}>
-                                        {result.result.ok ? <CheckCircle2 className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
+                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${result.result.ok ? 'bg-brand-green' : !signature ? 'bg-amber-500' : 'bg-red-500'} text-white shadow-xl`}>
+                                        {result.result.ok ? <CheckCircle2 className="w-8 h-8" /> : !signature ? <ShieldCheck className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <h3 className={`text-3xl font-bold ${result.result.ok ? 'text-brand-green' : 'text-red-500'}`}>
-                                            {result.result.ok ? 'Verified' : 'Verification Failed'}
+                                        <h3 className={`text-3xl font-bold ${result.result.ok ? 'text-brand-green' : !signature || result.result.reasons[0]?.includes('not found') ? 'text-amber-500' : 'text-red-500'}`}>
+                                            {result.result.ok ? 'Verified' : !signature ? 'Trace Loaded' : result.result.reasons[0]?.includes('not found on chain') ? 'Unanchored' : 'Verification Failed'}
                                         </h3>
                                         <div className="flex flex-wrap gap-2 mt-1">
                                             <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-bold text-gray-400 uppercase tracking-widest border border-gray-200">
@@ -358,8 +361,10 @@ function VerifyContent() {
                                 {!result.result.ok && result.result.reasons.length > 0 && (
                                     <div className="xl:col-span-2 p-8 bg-red-50 border border-red-100 rounded-3xl">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <XCircle className="w-6 h-6 text-red-600" />
-                                            <h4 className="text-red-700 font-bold uppercase tracking-widest text-sm">Discrepancy Detected</h4>
+                                            <XCircle className={`w-6 h-6 ${result.result.reasons[0]?.includes('not found') ? 'text-amber-600' : 'text-red-600'}`} />
+                                            <h4 className={`${result.result.reasons[0]?.includes('not found') ? 'text-amber-700' : 'text-red-700'} font-bold uppercase tracking-widest text-sm`}>
+                                                {result.result.reasons[0]?.includes('not found on chain') ? 'Anchoring Skipped' : 'Discrepancy Detected'}
+                                            </h4>
                                         </div>
                                         <ul className="list-disc list-inside text-sm text-red-600 space-y-3 font-medium">
                                             {result.result.reasons.map((reason, i) => (
