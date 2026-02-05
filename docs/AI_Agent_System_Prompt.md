@@ -110,5 +110,5 @@ async function executeWithSlotScribe() {
 npx slotscribe verify --sig <signature> --hash <hash>
 
 # Viewer
-open https://slotscribe.io/verify?sig=<sig>&hash=<hash>
+open https://slotscribe.xyz/verify?sig=<sig>&hash=<hash>
 ```

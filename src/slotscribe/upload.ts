@@ -25,7 +25,7 @@ export interface UploadOptions {
     headers?: Record<string, string>;
 }
 
-const DEFAULT_BASE_URL = 'https://slotscribe.io';
+const DEFAULT_BASE_URL = 'https://slotscribe.xyz';
 const DEFAULT_TIMEOUT = 10000;
 
 /**

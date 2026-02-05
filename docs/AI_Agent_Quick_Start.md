@@ -37,11 +37,11 @@ const trace = recorder.buildTrace();
 
 // 上传到 SlotScribe 公共服务
 const uploadResult = await uploadTrace(trace, {
-    baseUrl: 'https://slotscribe.io'  // 替换为你的服务地址
+    baseUrl: 'https://slotscribe.xyz'  // 替换为你的服务地址
 });
 
 console.log('Viewer:', uploadResult.viewerUrl);
-// → https://slotscribe.io/verify?sig=xxx&hash=xxx
+// → https://slotscribe.xyz/verify?sig=xxx&hash=xxx
 ```
 
 
@@ -245,7 +245,7 @@ class JupiterSwapAgent {
         return {
             signature,
             payloadHash: hash,
-            viewerUrl: `https://slotscribe.io/verify?sig=${signature}&hash=${hash}`,
+            viewerUrl: `https://slotscribe.xyz/verify?sig=${signature}&hash=${hash}`,
         };
     }
 }
@@ -270,7 +270,7 @@ pnpm add slotscribe @solana/web3.js
 npx slotscribe verify --sig <signature> --hash <payloadHash>
 
 # 或访问 Viewer
-https://slotscribe.io/verify?sig=<signature>&hash=<payloadHash>
+https://slotscribe.xyz/verify?sig=<signature>&hash=<payloadHash>
 ```
 
 ---
@@ -278,5 +278,5 @@ https://slotscribe.io/verify?sig=<signature>&hash=<payloadHash>
 ## 🔗 相关链接
 
 - [GitHub Repo](https://github.com/your-org/slotscribe)
-- [Viewer Demo](https://slotscribe.io)
+- [Viewer Demo](https://slotscribe.xyz)
 - [API Documentation](./API.md)

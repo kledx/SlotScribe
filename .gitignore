@@ -38,3 +38,6 @@ scripts/test-wallet.json
 scripts/test-*.json
 data/traces/*.json
 !data/traces/.gitkeep
+
+/docs
+/uiux
