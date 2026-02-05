@@ -1,0 +1,26 @@
+services:
+  slotscribe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_DEFAULT_CLUSTER=${NEXT_PUBLIC_DEFAULT_CLUSTER:-mainnet-beta}
+    container_name: slotscribe-web
+    restart: always
+    ports:
+      - "3101:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_DEFAULT_CLUSTER=mainnet-beta
+      # 建议在 .env 或外部传入以下敏感变量
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_ENDPOINT=${R2_ENDPOINT}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - MAINNET_RPC_URL=${MAINNET_RPC_URL}
+      - DEVNET_RPC_URL=${DEVNET_RPC_URL}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

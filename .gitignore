@@ -32,6 +32,8 @@ pnpm-debug.log*
 # Build & Meta
 dist/
 build/
+docs/
+uiux/
 
 # Sensitive & Local Tests
 scripts/test-wallet.json
