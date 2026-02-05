@@ -8,10 +8,9 @@ import {
     findMemoInTransaction,
     extractSlotScribeMemo,
     summarizeTransaction,
-    canonicalizeJson,
-    sha256Hex,
 } from '../src/slotscribe/index';
 import type { SolanaCluster, Trace, VerifyResult, ParsedTxSummary } from '../src/slotscribe/types';
+import { validateTraceIntegrity } from './traceIntegrity';
 
 export interface VerifyOptions {
     cluster: SolanaCluster;
@@ -58,11 +57,21 @@ export async function verifyTxWithTrace(options: VerifyOptions): Promise<VerifyR
             const trace = await traceStore.get(hash);
             if (!trace) {
                 return {
-                    result: { ok: false, reasons: [`Trace found for hash: ${hash}, but no on-chain signature provided for verification.`] }
+                    result: {
+                        ok: false,
+                        reasons: [
+                            `Trace not found for hash: ${hash}. Upload the trace first, or provide a signature for on-chain verification.`
+                        ]
+                    }
                 };
             }
             return {
-                result: trace.verifiedResult || { ok: false, reasons: ['Trace loaded but not verified on-chain'] },
+                result: trace.verifiedResult || {
+                    ok: false,
+                    reasons: [
+                        'Hash-only lookup: trace loaded, but on-chain verification requires a transaction signature.'
+                    ]
+                },
                 trace,
                 txSummary: trace.cachedTxSummary,
             };
@@ -145,9 +154,11 @@ export async function verifyTxWithTrace(options: VerifyOptions): Promise<VerifyR
     }
 
     // Step 4: 计算本地 hash
-    const payloadForHash = trace.hashedPayload || trace.payload;
-    const canonical = canonicalizeJson(payloadForHash);
-    const computedHash = sha256Hex(canonical);
+    const integrity = validateTraceIntegrity(trace);
+    const computedHash = integrity.computedHash;
+    if (!integrity.ok) {
+        reasons.push(`Trace integrity invalid: ${integrity.error}`);
+    }
 
     // Step 5: 比较 hash
     const hashMatch = computedHash.toLowerCase() === onChainHash.toLowerCase();

@@ -25,7 +25,9 @@ export function getRpcUrl(cluster: SolanaCluster, overrideUrl?: string): string 
         case 'localnet':
             return 'http://localhost:8899';
         default:
-            return getRpcUrl(DEFAULT_CLUSTER);
+            throw new Error(
+                `Invalid Solana cluster: "${String(cluster)}". Valid values: mainnet-beta, devnet, testnet, localnet`
+            );
     }
 }
 

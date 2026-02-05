@@ -9,9 +9,8 @@ import {
     findMemoInTransaction,
     extractSlotScribeMemo,
     summarizeTransaction,
-    canonicalizeJson,
-    sha256Hex,
 } from '../src/slotscribe/index';
+import { validateTraceIntegrity } from '../lib/traceIntegrity';
 import {
     getConfig,
     readTraceFile,
@@ -102,9 +101,8 @@ async function main() {
 
     // Step 4: 计算本地 hash
     // 使用 hashedPayload（计算 hash 时的快照），如果不存在则回退到 payload（兼容旧 trace）
-    const payloadForHash = trace.hashedPayload || trace.payload;
-    const canonical = canonicalizeJson(payloadForHash);
-    const computedHash = sha256Hex(canonical);
+    const integrity = validateTraceIntegrity(trace);
+    const computedHash = integrity.computedHash;
 
     log(`Computed hash: ${computedHash}`);
 
@@ -114,6 +112,10 @@ async function main() {
     // Step 6: 额外验证 txSummary
     const txSummary = summarizeTransaction(txResponse);
     const reasons: string[] = [];
+
+    if (!integrity.ok) {
+        reasons.push(`Trace integrity invalid: ${integrity.error}`);
+    }
 
     if (!hashMatch) {
         reasons.push(`Hash mismatch: on-chain=${onChainHash}, computed=${computedHash}`);

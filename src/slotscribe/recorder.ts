@@ -1,6 +1,6 @@
-/**
- * SlotScribeRecorder - Trace 记录器
- * 用于记录 Agent 操作轨迹并计算 payloadHash
+﻿/**
+ * SlotScribeRecorder - Trace 璁板綍鍣?
+ * 鐢ㄤ簬璁板綍 Agent 鎿嶄綔杞ㄨ抗骞惰绠?payloadHash
  */
 
 import type {
@@ -18,7 +18,7 @@ import type {
     MemeCoinDetails,
     TokenInfo,
 } from './types';
-import { normalizeCluster, buildMemoIx } from './solana';
+import { normalizeCluster, buildMemoIx, MEMO_PROGRAM_ID } from './solana';
 import { canonicalizeJson } from './canonicalize';
 import { sha256Hex } from './hash';
 import { uploadTrace } from './upload';
@@ -60,15 +60,15 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 添加计划步骤
+     * 娣诲姞璁″垝姝ラ
      */
     addPlanSteps(steps: string[]): void {
         this.payload.plan.steps.push(...steps);
     }
 
     /**
-     * 记录工具调用
-     * 包装异步函数，自动记录开始/结束时间和结果
+     * 璁板綍宸ュ叿璋冪敤
+     * 鍖呰寮傛鍑芥暟锛岃嚜鍔ㄨ褰曞紑濮?缁撴潫鏃堕棿鍜岀粨鏋?
      */
     async recordToolCall<T>(
         name: string,
@@ -107,7 +107,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 手动记录审计步骤（工具调用）
+     * 鎵嬪姩璁板綍瀹¤姝ラ锛堝伐鍏疯皟鐢級
      */
     addAuditStep(step: {
         name: string;
@@ -128,7 +128,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置交易摘要（通用方法）
+     * 璁剧疆浜ゆ槗鎽樿锛堥€氱敤鏂规硶锛?
      */
     setTxSummary(summary: Partial<TxSummary>): void {
         this.payload.txSummary = {
@@ -137,10 +137,10 @@ export class SlotScribeRecorder {
         };
     }
 
-    // ==================== 便捷方法：复杂交易类型 ====================
+    // ==================== 渚挎嵎鏂规硶锛氬鏉備氦鏄撶被鍨?====================
 
     /**
-     * 设置 Swap 交易
+     * 璁剧疆 Swap 浜ゆ槗
      */
     setSwapTx(params: {
         feePayer: string;
@@ -157,7 +157,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置质押交易
+     * 璁剧疆璐ㄦ娂浜ゆ槗
      */
     setStakeTx(params: {
         feePayer: string;
@@ -174,7 +174,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置解质押交易
+     * 璁剧疆瑙ｈ川鎶间氦鏄?
      */
     setUnstakeTx(params: {
         feePayer: string;
@@ -191,7 +191,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置 NFT 购买交易
+     * 璁剧疆 NFT 璐拱浜ゆ槗
      */
     setNftBuyTx(params: {
         feePayer: string;
@@ -208,7 +208,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置 NFT 铸造交易
+     * 璁剧疆 NFT 閾搁€犱氦鏄?
      */
     setNftMintTx(params: {
         feePayer: string;
@@ -225,7 +225,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置添加流动性交易
+     * 璁剧疆娣诲姞娴佸姩鎬т氦鏄?
      */
     setAddLiquidityTx(params: {
         feePayer: string;
@@ -242,7 +242,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置移除流动性交易
+     * 璁剧疆绉婚櫎娴佸姩鎬т氦鏄?
      */
     setRemoveLiquidityTx(params: {
         feePayer: string;
@@ -259,7 +259,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置借贷交易
+     * 璁剧疆鍊熻捶浜ゆ槗
      */
     setLendingTx(params: {
         feePayer: string;
@@ -283,14 +283,14 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置 Meme 币交易（Pump.fun/Moonshot 等）
+     * 璁剧疆 Meme 甯佷氦鏄擄紙Pump.fun/Moonshot 绛夛級
      */
     setMemeCoinTx(params: {
         feePayer: string;
         meme: MemeCoinDetails;
         programIds?: string[];
     }): void {
-        // 根据 action 确定交易类型
+        // 鏍规嵁 action 纭畾浜ゆ槗绫诲瀷
         const type = params.meme.action === 'buy' || params.meme.action === 'sell'
             ? 'swap'
             : 'token_mint';
@@ -305,7 +305,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 设置简单转账（向后兼容）
+     * 璁剧疆绠€鍗曡浆璐︼紙鍚戝悗鍏煎锛?
      */
     setTransferTx(params: {
         feePayer: string;
@@ -323,14 +323,14 @@ export class SlotScribeRecorder {
         };
     }
 
-    // ==================== 核心方法 ====================
+    // ==================== 鏍稿績鏂规硶 ====================
 
     /**
-     * 计算并固化 payloadHash
-     * 必须在 txSummary 填充完成后调用
+     * 璁＄畻骞跺浐鍖?payloadHash
+     * 蹇呴』鍦?txSummary 濉厖瀹屾垚鍚庤皟鐢?
      */
     finalizePayloadHash(): string {
-        // 保存 payload 快照（深拷贝）
+        // 淇濆瓨 payload 蹇収锛堟繁鎷疯礉锛?
         this.hashedPayload = JSON.parse(JSON.stringify(this.payload));
         const canonical = canonicalizeJson(this.hashedPayload);
         this.payloadHash = sha256Hex(canonical);
@@ -338,14 +338,14 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 获取当前 payloadHash（如果已计算）
+     * 鑾峰彇褰撳墠 payloadHash锛堝鏋滃凡璁＄畻锛?
      */
     getPayloadHash(): string | null {
         return this.payloadHash;
     }
 
     /**
-     * 附加链上信息
+     * 闄勫姞閾句笂淇℃伅
      */
     attachOnChain(signature: string, info?: Partial<Omit<OnChainInfo, 'signature'>>): void {
         this.onChain = {
@@ -355,14 +355,14 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 构建完整的 Trace 对象
+     * 鏋勫缓瀹屾暣鐨?Trace 瀵硅薄
      */
     buildTrace(): Trace {
         if (!this.payloadHash || !this.hashedPayload) {
             throw new Error('payloadHash not finalized. Call finalizePayloadHash() first.');
         }
 
-        // 根据交易类型自动选择版本
+        // 鏍规嵁浜ゆ槗绫诲瀷鑷姩閫夋嫨鐗堟湰
         const version = this.determineVersion();
 
         const trace: Trace = {
@@ -381,20 +381,20 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 根据 txSummary 内容确定 Trace 版本
-     * - BBX1: 仅包含简单 transfer（无 type 或 type='transfer'且无复杂字段）
-     * - BBX2: 包含复杂交易类型（swap/stake/nft/lending/meme 等）
+     * 鏍规嵁 txSummary 鍐呭纭畾 Trace 鐗堟湰
+     * - BBX1: 浠呭寘鍚畝鍗?transfer锛堟棤 type 鎴?type='transfer'涓旀棤澶嶆潅瀛楁锛?
+     * - BBX2: 鍖呭惈澶嶆潅浜ゆ槗绫诲瀷锛坰wap/stake/nft/lending/meme 绛夛級
      */
     private determineVersion(): TraceVersion {
         const summary = this.payload.txSummary;
 
-        // 如果有复杂交易字段，使用 BBX2
+        // 濡傛灉鏈夊鏉備氦鏄撳瓧娈碉紝浣跨敤 BBX2
         if (summary.swap || summary.stake || summary.nft ||
             summary.lp || summary.lending || summary.meme || summary.custom) {
             return 'BBX2';
         }
 
-        // 如果 type 是复杂类型，使用 BBX2
+        // 濡傛灉 type 鏄鏉傜被鍨嬶紝浣跨敤 BBX2
         const complexTypes = [
             'swap', 'stake', 'unstake', 'nft_mint', 'nft_buy', 'nft_list',
             'token_mint', 'lp_add', 'lp_remove', 'lending_supply',
@@ -405,25 +405,25 @@ export class SlotScribeRecorder {
             return 'BBX2';
         }
 
-        // 默认使用 BBX1（向后兼容）
+        // 榛樿浣跨敤 BBX1锛堝悜鍚庡吋瀹癸級
         return 'BBX1';
     }
 
     /**
-     * 获取当前 payload（只读）
+     * 鑾峰彇褰撳墠 payload锛堝彧璇伙級
      */
     getPayload(): Readonly<TracePayload> {
         return this.payload;
     }
 
     /**
-     * 清理输出数据，避免存储过大或不可序列化的对象
+     * 娓呯悊杈撳嚭鏁版嵁锛岄伩鍏嶅瓨鍌ㄨ繃澶ф垨涓嶅彲搴忓垪鍖栫殑瀵硅薄
      */
     private sanitizeOutput(output: unknown): unknown {
         try {
-            // 尝试 JSON 序列化，如果失败则返回字符串表示
+            // 灏濊瘯 JSON 搴忓垪鍖栵紝濡傛灉澶辫触鍒欒繑鍥炲瓧绗︿覆琛ㄧず
             const str = JSON.stringify(output);
-            // 限制大小
+            // 闄愬埗澶у皬
             if (str.length > 100000) {
                 return { _truncated: true, preview: str.slice(0, 1000) + '...' };
             }
@@ -434,9 +434,9 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 【推荐】显式发送并锚定交易
+     * 銆愭帹鑽愩€戞樉寮忓彂閫佸苟閿氬畾浜ゆ槗
      * 
-     * 自动完成：注入 Memo -> 发送交易 -> 上传 Trace
+     * 鑷姩瀹屾垚锛氭敞鍏?Memo -> 鍙戦€佷氦鏄?-> 涓婁紶 Trace
      */
     async sendTransaction(
         connection: Connection,
@@ -448,53 +448,41 @@ export class SlotScribeRecorder {
             baseUrl?: string;
         } = {}
     ): Promise<TransactionSignature> {
-        // 1. 注入 Memo (对于 Legacy Transaction)
+        // 1. Only legacy transactions are supported for automatic memo injection.
+        if (!(transaction instanceof (await import('@solana/web3.js')).Transaction)) {
+            throw new Error(
+                'SlotScribe sendTransaction does not support VersionedTransaction auto-memo injection. ' +
+                'Please add the memo before compiling v0, send via your SDK, then call syncOnChain(signature, connection).'
+            );
+        }
+
+        // 2. Fill txSummary before hashing to avoid post-hash mutations.
+        if (!this.payload.txSummary.feePayer) {
+            this.payload.txSummary.feePayer = transaction.feePayer?.toBase58() || signers[0]?.publicKey.toBase58() || '';
+        }
+        if (this.payload.txSummary.programIds.length === 0) {
+            const programIds = transaction.instructions.map(ix => ix.programId.toBase58());
+            const memoProgramId = MEMO_PROGRAM_ID.toBase58();
+            if (!programIds.includes(memoProgramId)) {
+                programIds.push(memoProgramId);
+            }
+            this.payload.txSummary.programIds = programIds;
+        }
+
+        // 3. Finalize hash and inject memo.
         const hash = this.finalizePayloadHash();
         const memoIx = buildMemoIx(`SS1 payload=${hash}`);
+        transaction.add(memoIx);
 
-        if (transaction instanceof (await import('@solana/web3.js')).Transaction) {
-            // Legacy Transaction
-            transaction.add(memoIx);
+        // 4. Send transaction.
+        const signature = await connection.sendTransaction(transaction, signers, options.sendOptions);
 
-            // 自动填充一部分 TxSummary
-            if (!this.payload.txSummary.feePayer) {
-                this.payload.txSummary.feePayer = transaction.feePayer?.toBase58() || signers[0]?.publicKey.toBase58() || '';
-            }
-            if (this.payload.txSummary.programIds.length === 0) {
-                this.payload.txSummary.programIds = transaction.instructions.map(ix => ix.programId.toBase58());
-            }
-        } else {
-            // VersionedTransaction
-            // 注意：如果交易已经签名，注入 Memo 会导致签名无效。
-            // 这里我们记录信息，但对于已经编码的消息，注入需要重新构建
-            if (!this.payload.txSummary.feePayer) {
-                this.payload.txSummary.feePayer = transaction.message.staticAccountKeys[0]?.toBase58() || signers[0]?.publicKey.toBase58() || '';
-            }
-            if (this.payload.txSummary.programIds.length === 0) {
-                const staticKeys = transaction.message.staticAccountKeys;
-                this.payload.txSummary.programIds = transaction.message.compiledInstructions.map(
-                    ix => staticKeys[ix.programIdIndex]?.toBase58() || 'unknown'
-                );
-            }
-        }
-
-        // 2. 发送交易
-        let signature: TransactionSignature;
-        if ('instructions' in transaction) {
-            // Legacy Transaction
-            signature = await connection.sendTransaction(transaction, signers, options.sendOptions);
-        } else {
-            // VersionedTransaction
-            signature = await connection.sendTransaction(transaction, options.sendOptions);
-        }
-        // 3. 后台跟进逻辑（确认并上传）
+        // 5. Follow-up confirmation and optional upload in background.
         const followUp = async () => {
             try {
-                // 等待确认
                 await connection.confirmTransaction(signature, 'confirmed');
                 this.attachOnChain(signature, { status: 'confirmed' });
 
-                // 自动上传
                 if (options.autoUpload !== false) {
                     await uploadTrace(this.buildTrace(), { baseUrl: options.baseUrl });
                 }
@@ -503,16 +491,16 @@ export class SlotScribeRecorder {
             }
         };
 
-        followUp(); // 异步执行，不阻塞主线程返回 signature
+        followUp();
 
         return signature;
     }
 
     /**
-     * 【通用助手】同步已发送的交易到 SlotScribe
+     * 銆愰€氱敤鍔╂墜銆戝悓姝ュ凡鍙戦€佺殑浜ゆ槗鍒?SlotScribe
      * 
-     * 适用于用户使用 Anchor, Jupiter 或其他第三方 SDK 发送交易的场景。
-     * 在后台等待交易确认后自动上传审计报告。
+     * 閫傜敤浜庣敤鎴蜂娇鐢?Anchor, Jupiter 鎴栧叾浠栫涓夋柟 SDK 鍙戦€佷氦鏄撶殑鍦烘櫙銆?
+     * 鍦ㄥ悗鍙扮瓑寰呬氦鏄撶‘璁ゅ悗鑷姩涓婁紶瀹¤鎶ュ憡銆?
      */
     syncOnChain(
         signature: TransactionSignature,
@@ -524,11 +512,11 @@ export class SlotScribeRecorder {
     ): void {
         const followUp = async () => {
             try {
-                // 等待确认
+                // 绛夊緟纭
                 await connection.confirmTransaction(signature, 'confirmed');
                 this.attachOnChain(signature, { status: 'confirmed' });
 
-                // 自动上传
+                // 鑷姩涓婁紶
                 if (options.autoUpload !== false) {
                     await uploadTrace(this.buildTrace(), { baseUrl: options.baseUrl });
                 }
@@ -537,21 +525,21 @@ export class SlotScribeRecorder {
             }
         };
 
-        followUp(); // 必须是异步的，不影响用户主业务流
+        followUp(); // 蹇呴』鏄紓姝ョ殑锛屼笉褰卞搷鐢ㄦ埛涓讳笟鍔℃祦
     }
 }
 
-// ==================== 便捷函数：创建 Token 信息 ====================
+// ==================== 渚挎嵎鍑芥暟锛氬垱寤?Token 淇℃伅 ====================
 
 /**
- * 创建 Token 信息
+ * 鍒涘缓 Token 淇℃伅
  */
 export function token(mint: string, symbol?: string, decimals?: number): TokenInfo {
     return { mint, symbol, decimals };
 }
 
 /**
- * 常用 Token
+ * 甯哥敤 Token
  */
 export const TOKENS = {
     SOL: { mint: 'So11111111111111111111111111111111111111112', symbol: 'SOL', decimals: 9 },
@@ -561,3 +549,4 @@ export const TOKENS = {
     WIF: { mint: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm', symbol: 'WIF', decimals: 6 },
     JUP: { mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', symbol: 'JUP', decimals: 6 },
 } as const;
+

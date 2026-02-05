@@ -1,9 +1,9 @@
 {
   "name": "slotscribe",
   "version": "0.1.0",
-  "private": true,
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "private": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
@@ -11,11 +11,14 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -26,7 +29,8 @@
     "verify": "tsx scripts/verify.ts",
     "examples": "tsx scripts/examples-complex-tx.ts",
     "mcp": "tsx src/mcp/server.ts",
-    "build:sdk": "tsup src/slotscribe/index.ts --format cjs,esm --dts --clean --tsconfig tsconfig.build.json"
+    "build:sdk": "tsup src/slotscribe/index.ts --format cjs,esm --dts --clean --tsconfig tsconfig.build.json",
+    "prepublishOnly": "pnpm build:sdk"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.983.0",
