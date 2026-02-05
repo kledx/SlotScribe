@@ -1,10 +1,6 @@
 services:
   slotscribe:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - NEXT_PUBLIC_DEFAULT_CLUSTER=${NEXT_PUBLIC_DEFAULT_CLUSTER:-mainnet-beta}
+    image: ghcr.io/kledx/slotscribe:main
     container_name: slotscribe-web
     restart: always
     ports:
