@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Trace files (keep .gitkeep)
+data/traces/*.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+tsconfig.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Build & Meta
+dist/
+build/
+
+# Sensitive & Local Tests
+scripts/test-wallet.json
+scripts/test-*.json
+data/traces/*.json
+!data/traces/.gitkeep
