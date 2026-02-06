@@ -1,6 +1,6 @@
-# SlotScribe — Verifiable Execution Flight Recorder for Solana AI Agents
+﻿# SlotScribe 鈥?Verifiable Execution Flight Recorder for Solana AI Agents
 
-> Turn on-chain AI agents from “trust me” into “verify me”.
+> Turn on-chain AI agents from 鈥渢rust me鈥?into 鈥渧erify me鈥?
 
 SlotScribe is a **verifiable execution recorder**:
 - Your agent runs normally (builds/signs/sends transactions). SlotScribe never touches private keys.
@@ -8,16 +8,16 @@ SlotScribe is a **verifiable execution recorder**:
 - It computes a **SHA-256** over canonicalized **trace.payload**.
 - It anchors that hash on-chain via a **Memo** instruction in the same transaction.
 - Anyone can verify by tx signature:
-  ✅ **on-chain memo hash == locally recomputed trace payload hash**
+  鉁?**on-chain memo hash == locally recomputed trace payload hash**
 
 ---
 
-## 🤖 AI Agent Ecosystem Compatible
+## 馃 AI Agent Ecosystem Compatible
 
 SlotScribe supports multiple integration paths for modern AI Agents:
-- **[MCP Server](file:///e:/work_space/SlotScribe/docs/MCP_Quick_Start.md)**: Native Model Context Protocol support for Claude Desktop and MCP-enabled agents.
-- **[1-line SDK Plugin](file:///e:/work_space/SlotScribe/docs/AI_Agent_Quick_Start.md)**: Easy integration for TypeScript/Node.js agents.
-- **[Production & Mainnet Testing](file:///e:/work_space/SlotScribe/docs/Production_Testing_and_Wallet_Import.md)**: Guide for mainnet verification and private key import.
+- **[MCP Server](./docs/MCP_Quick_Start.md)**: Native Model Context Protocol support for Claude Desktop and MCP-enabled agents.
+- **[1-line SDK Plugin](./docs/AI_Agent_Quick_Start.md)**: Easy integration for TypeScript/Node.js agents.
+- **[Production & Mainnet Testing](./docs/Production_Testing_and_Wallet_Import.md)**: Guide for mainnet verification and private key import.
 - **[Public API](https://slotscribe.xyz/api/trace)**: REST API for agents in any language (Python, Rust, etc.).
 
 ---
@@ -33,31 +33,31 @@ SlotScribe provides **verifiable execution receipts**.
 
 ---
 
-## How does SlotScribe “verify agent behavior”?
+## How does SlotScribe 鈥渧erify agent behavior鈥?
 
-### 1) Turn “claims” into independently checkable evidence
+### 1) Turn 鈥渃laims鈥?into independently checkable evidence
 
 Without SlotScribe, an agent can say:
 
-> “I bought that meme coin for you — trust me.”
+> 鈥淚 bought that meme coin for you 鈥?trust me.鈥?
 
 With SlotScribe, the agent must provide:
 - the transaction signature
-- a verifiable report (✅ Verified)
+- a verifiable report (鉁?Verified)
 
 Then users/judges/other agents can independently check:
 - Did the buy actually happen? Which token? How much was spent/received? What was the outcome?
 - Were there any hidden instructions (e.g., an extra transfer draining funds)?
 
-This is behavior verification: from “I said I did it” to “on-chain evidence shows it happened”.
+This is behavior verification: from 鈥淚 said I did it鈥?to 鈥渙n-chain evidence shows it happened鈥?
 
 ### 2) Make trust a programmable gate (so other agents can decide)
 
-This is SlotScribe’s real adoption flywheel:
+This is SlotScribe鈥檚 real adoption flywheel:
 - task markets/funders/copy-trading agents can enforce:
   - `if not SlotScribe verified -> refuse / require manual review`
 - settlements can be conditioned on verification:
-  - “Only Verified transactions get paid / share revenue”
+  - 鈥淥nly Verified transactions get paid / share revenue鈥?
 
 ---
 
@@ -68,10 +68,10 @@ This is SlotScribe’s real adoption flywheel:
 - Memo must contain: `SS1 payload=<payloadHash>`
 
 ### Verification
-1. Fetch tx by signature, parse Memo → `payloadHashOnChain`
+1. Fetch tx by signature, parse Memo 鈫?`payloadHashOnChain`
 2. Load `trace.json`
 3. Recompute `payloadHashLocal`
-4. Compare → ✅ Verified
+4. Compare 鈫?鉁?Verified
 
 Only `trace.payload` participates in the hash (not `trace.onChain`, etc.).
 
@@ -99,7 +99,7 @@ You should see:
 - `Viewer: http://localhost:3000/verify?cluster=devnet&sig=<tx_signature>&hash=<sha256_hex>`
 
 Open the Viewer link:
-- ✅ Verified
+- 鉁?Verified
 - tx summary + trace timeline
 
 > The demo airdrops a temporary devnet keypair and sends a transfer tx with a Memo anchor.
@@ -143,7 +143,7 @@ pnpm dev
 The verify page:
 - accepts a tx signature
 - lets you choose cluster (devnet/mainnet-beta/testnet)
-- returns ✅/❌ plus mismatch reasons
+- returns 鉁?鉂?plus mismatch reasons
 
 ---
 
@@ -167,7 +167,7 @@ const signature = await connection.sendTransaction(tx, [payer]);
 ```
 
 ### Option B: wrap Signer (best-effort)
-Useful for frameworks that expose only a signer. Note: signers don’t broadcast, so this is “pre-commit trace” oriented.
+Useful for frameworks that expose only a signer. Note: signers don鈥檛 broadcast, so this is 鈥減re-commit trace鈥?oriented.
 
 ---
 
@@ -220,13 +220,13 @@ const result = await uploadTrace(trace, {
 });
 
 console.log('Viewer:', result.viewerUrl);
-// → https://slotscribe.xyz/verify?sig=xxx&hash=xxx
+// 鈫?https://slotscribe.xyz/verify?sig=xxx&hash=xxx
 ```
 
 ### Features
-- ✅ CORS enabled (call from any domain)
-- ✅ Hash verification (recomputes & validates)
-- ✅ Duplicate protection (no overwrite)
+- 鉁?CORS enabled (call from any domain)
+- 鉁?Hash verification (recomputes & validates)
+- 鉁?Duplicate protection (no overwrite)
 
 ---
 
@@ -265,12 +265,13 @@ This allows other agents to programmatically integrate SlotScribe's verification
 
 ## Roadmap
 
-- [ ] Multi-tx sessions (one intent → multiple txs on a single timeline)
+- [ ] Multi-tx sessions (one intent 鈫?multiple txs on a single timeline)
 - [ ] DeFi decoders (Jupiter swap / staking / token deltas)
 - [x] MCP Support: slotscribe-mcp server for interactive agents
-- [ ] Commit–Reveal (stronger non-repudiation)
+- [ ] Commit鈥揜eveal (stronger non-repudiation)
 
 ---
 
 ## License
 MIT
+

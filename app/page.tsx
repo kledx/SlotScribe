@@ -143,7 +143,7 @@ export default function HomePage() {
                     <div className="bg-[#EFEFE9] rounded-2xl p-6 md:p-8 font-mono text-sm relative border border-brand-green/30 group">
                         <pre className="text-brand-dark leading-relaxed overflow-x-auto">
                             {`// Import SlotScribe SDK
-import { SlotScribeRecorder } from '@slotscribe/sdk';
+import { SlotScribeRecorder } from 'slotscribe';
 
 // Initialize recorder for a swap intent
 const recorder = new SlotScribeRecorder({ 

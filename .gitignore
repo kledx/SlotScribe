@@ -32,7 +32,6 @@ pnpm-debug.log*
 # Build & Meta
 dist/
 build/
-docs/
 uiux/
 
 # Sensitive & Local Tests
@@ -41,7 +40,6 @@ scripts/test-*.json
 data/traces/*.json
 !data/traces/.gitkeep
 
-/docs
 /uiux
 
 # Local debug / one-off validation scripts (do not commit)

@@ -55,6 +55,8 @@ const DOCS_NAV = [
     }
 ];
 
+const TOC_ITEMS = DOCS_NAV.flatMap((section) => section.items);
+
 export default function DocsPage() {
     const [activeId, setActiveId] = useState('overview');
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -104,7 +106,7 @@ export default function DocsPage() {
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-black mb-4">Infrastructure for the Agentic Era</h3>
                                 <p className="text-white/60 font-medium max-w-xl leading-relaxed">
-                                    SlotScribe is designed to be the "Flight Recorder" for the Next Billion Users鈥擜gents. Whether you are building an autonomous fund, a social agent, or a DeFi automation tool, SlotScribe provides the verifiable proof required for institutional and retail trust.
+                                    SlotScribe is designed to be the "Flight Recorder" for the Next Billion Users-Agents. Whether you are building an autonomous fund, a social agent, or a DeFi automation tool, SlotScribe provides the verifiable proof required for institutional and retail trust.
                                 </p>
                             </div>
                             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/20 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
@@ -144,8 +146,8 @@ export default function DocsPage() {
                                     </pre>
                                 </div>
                                 <div className="flex flex-wrap gap-4 text-sm text-gray-500 font-medium">
-                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">鉁?Auto-injects Memo</span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">鉁?Auto-uploads Trace</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">[OK] Auto-injects Memo</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">[OK] Auto-uploads Trace</span>
                                 </div>
                             </section>
 
@@ -239,7 +241,7 @@ await connection.sendTransaction(tx, [payer]);`}
                             <div>
                                 <h4 className="text-xl font-black mb-2">Local vs Registry</h4>
                                 <p className="text-white/60 text-sm font-medium leading-relaxed">
-                                    In this repo, use local imports from <code>src/slotscribe</code> or the workspace alias <code>slotscribe</code>. Registry publishing is not part of this repository setup.
+                                    In this repo, use local imports from <code>src/slotscribe</code> or the workspace alias <code>slotscribe</code>. For external projects, install from npm using <code>slotscribe</code>.
                                 </p>
                             </div>
                         </div>
@@ -646,11 +648,23 @@ tx.add(buildMemoIx(\`SS1 payload=\${payloadHash}\`));`}
             <aside className="hidden xl:block w-64 pt-24 px-8 border-l border-brand-dark/5">
                 <div className="sticky top-24">
                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-6">On this page</h4>
-                    <nav className="flex flex-col gap-4 border-l-2 border-brand-dark/5">
-                        <a href="#overview" className="pl-4 text-sm font-bold text-brand-green border-l-2 border-brand-green -ml-[2px] transition-all">Overview</a>
-                        <a href="#basic" className="pl-4 text-sm font-bold text-gray-400 hover:text-brand-dark transition-all">Basic Integration</a>
-                        <a href="#advanced" className="pl-4 text-sm font-bold text-gray-400 hover:text-brand-dark transition-all">Advanced Configuration</a>
-                        <a href="#troubleshooting" className="pl-4 text-sm font-bold text-gray-400 hover:text-brand-dark transition-all">Troubleshooting</a>
+                    <nav className="flex flex-col gap-2 border-l-2 border-brand-dark/5">
+                        {TOC_ITEMS.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    setActiveId(item.id);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className={`pl-4 text-left text-sm font-bold transition-all ${
+                                    activeId === item.id
+                                        ? 'text-brand-green border-l-2 border-brand-green -ml-[2px]'
+                                        : 'text-gray-400 hover:text-brand-dark'
+                                }`}
+                            >
+                                {item.title}
+                            </button>
+                        ))}
                     </nav>
 
                     <div className="mt-12 p-6 bg-brand-green rounded-2xl text-white shadow-xl shadow-brand-green/20">
