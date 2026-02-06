@@ -40,6 +40,10 @@ RUN adduser --system --uid 1001 nextjs
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
+# 为持久化数据创建目录并设置权限
+RUN mkdir -p /app/data
+RUN chown nextjs:nodejs /app/data
+
 # 从构建阶段利用 standalone 输出
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
