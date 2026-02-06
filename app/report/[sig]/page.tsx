@@ -263,22 +263,24 @@ function ReportContent({ signature }: { signature: string }) {
                     <h2 className="text-sm font-bold text-gray-500 uppercase tracking-[0.3em]">Official Audit Receipt</h2>
                 </div>
                 <div className="p-10">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
-                        <div className="flex-1">
+                    <div className="flex flex-col md:flex-row items-start gap-8 mb-12">
+                        <div className="flex-1 min-w-0">
                             <h3 className="text-3xl font-black text-brand-dark tracking-tight mb-3">
                                 {result.trace?.payload.intent || 'Generic Action'}
                             </h3>
-                            <div className="flex items-center gap-2 group cursor-pointer" onClick={() => signature !== 'unverified' && copyToClipboard(signature)}>
-                                <span className={`text-xs font-mono ${signature === 'unverified' ? 'text-amber-600 bg-amber-50 border-amber-100' : 'text-gray-400 bg-gray-100/50 border-gray-100'} px-3 py-1 rounded-lg border group-hover:border-brand-green/30 transition-all`}>
+                            <div className="flex items-center gap-2 group cursor-pointer min-w-0" onClick={() => signature !== 'unverified' && copyToClipboard(signature)}>
+                                <span className={`text-xs font-mono max-w-full break-all ${signature === 'unverified' ? 'text-amber-600 bg-amber-50 border-amber-100' : 'text-gray-400 bg-gray-100/50 border-gray-100'} px-3 py-1 rounded-lg border group-hover:border-brand-green/30 transition-all`}>
                                     {signature === 'unverified' ? 'TX: PENDING ANCHOR' : `SIG: ${signature.slice(0, 16)}...${signature.slice(-16)}`}
                                 </span>
                                 {signature !== 'unverified' && <Copy className="w-3 h-3 text-gray-300 group-hover:text-brand-green" />}
                             </div>
                         </div>
-                        <div className="text-right flex flex-col items-end gap-3">
+                        <div className="md:ml-auto text-left md:text-right flex flex-col md:items-end gap-3 max-w-full">
                             <div>
                                 <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Block Cluster</p>
-                                <p className="text-lg font-bold text-brand-green">{result.trace?.payload.txSummary.cluster.toUpperCase() || searchParams.get('cluster')?.toUpperCase() || 'DEVNET'}</p>
+                                <p className="text-lg font-bold text-brand-green break-words">
+                                    {result.trace?.payload.txSummary.cluster.toUpperCase() || searchParams.get('cluster')?.toUpperCase() || 'DEVNET'}
+                                </p>
                             </div>
                             {signature !== 'unverified' && (
                                 <a
@@ -380,27 +382,27 @@ function ReportContent({ signature }: { signature: string }) {
                             <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Execution Sequence</h4>
                             <div className="bg-white/40 border border-white/20 rounded-[2rem] overflow-hidden p-8 max-h-[500px] overflow-y-auto font-mono text-sm shadow-inner">
                                 {result.trace?.payload.plan.steps.map((step, idx) => (
-                                    <div key={idx} className="flex space-x-6 py-2.5 border-b border-brand-dark/5 last:border-0 group">
-                                        <span className="text-gray-300 text-sm w-4 select-none font-bold">{idx + 1}</span>
-                                        <span className="text-brand-dark font-medium group-hover:text-brand-green transition-colors uppercase tracking-tight">{step}</span>
-                                    </div>
-                                ))}
+                                <div key={idx} className="flex space-x-6 py-2.5 border-b border-brand-dark/5 last:border-0 group min-w-0">
+                                    <span className="text-gray-300 text-sm w-4 select-none font-bold">{idx + 1}</span>
+                                    <span className="text-brand-dark font-medium group-hover:text-brand-green transition-colors uppercase tracking-tight break-words">{step}</span>
+                                </div>
+                            ))}
                                 {(result.trace?.payload.toolCalls || []).map((call, idx) => (
                                     <div key={`call-${idx}`} className="flex space-x-6 py-4 border-b border-brand-dark/5 last:border-0 items-start group">
                                         <span className="text-brand-green/30 text-sm w-4 select-none font-black pt-1">#</span>
-                                        <div className="flex-1">
+                                        <div className="flex-1 min-w-0">
                                             <div className="flex items-center space-x-3 mb-1">
                                                 <span className="text-brand-green font-black uppercase text-sm tracking-widest">{call.name}</span>
                                                 <span className="px-2 py-0.5 bg-gray-100 rounded text-sm text-gray-400 font-bold">{call.startedAt.split('T')[1].split('.')[0]}</span>
                                             </div>
-                                            <p className="text-gray-500 text-sm italic leading-relaxed">
+                                            <p className="text-gray-500 text-sm italic leading-relaxed break-all">
                                                 Captured Input: {JSON.stringify(call.input).substring(0, 100)}...
                                             </p>
                                         </div>
                                     </div>
                                 ))}
                                 <div className="mt-8 pt-8 border-t border-brand-dark/5 text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center gap-4">
-                                    <span className="italic font-medium">SlotScribe Verifiable Trace Engine v1.0.4 - Deterministic Audit Mode</span>
+                                    <span className="italic font-medium break-words text-center md:text-left">SlotScribe Verifiable Trace Engine v1.0.4 - Deterministic Audit Mode</span>
                                     <button
                                         onClick={downloadTraceJson}
                                         disabled={!result.trace}
@@ -424,7 +426,7 @@ function ReportContent({ signature }: { signature: string }) {
                 </div>
                 <div className="p-10">
                     <div className="relative group">
-                        <div className="p-6 bg-brand-dark rounded-2xl font-mono text-sm text-brand-green overflow-x-auto border border-white/5 shadow-2xl">
+                        <div className="p-6 pr-16 bg-brand-dark rounded-2xl font-mono text-sm text-brand-green overflow-x-auto border border-white/5 shadow-2xl">
                             <span className="text-brand-green/40 mr-2">$</span> pnpm verify {signature !== 'unverified' ? `--sig ${signature}` : `--hash ${searchParams.get('hash')}`} --cluster {searchParams.get('cluster') || 'mainnet-beta'}
                         </div>
                         <button
@@ -445,8 +447,8 @@ function ReportContent({ signature }: { signature: string }) {
                 <div className="flex justify-center mb-6">
                     <div className="w-10 h-1 border-t-2 border-brand-green/20"></div>
                 </div>
-                <p className="text-sm font-black tracking-[0.4em] uppercase text-brand-dark/30 mb-2">SlotScribe Cryptographical Truth Engine</p>
-                <p className="text-sm font-medium text-gray-400">Securely anchored on {result.trace?.createdAt || new Date().toISOString()}</p>
+                <p className="text-sm font-black tracking-[0.2em] md:tracking-[0.4em] uppercase text-brand-dark/30 mb-2 break-words">SlotScribe Cryptographical Truth Engine</p>
+                <p className="text-sm font-medium text-gray-400 break-words">Securely anchored on {result.trace?.createdAt || new Date().toISOString()}</p>
             </div>
         </div>
     );
