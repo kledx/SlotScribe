@@ -18,6 +18,7 @@ const RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504]);
 const RETRY_QUEUE_LIMIT = 100;
 const ACTIVE_SOCIAL_TARGETS = Number.parseInt(process.env.AGENT_ACTIVE_SOCIAL_TARGETS || '4', 10);
 const DEFAULT_SOCIAL_TARGETS = Number.parseInt(process.env.AGENT_DEFAULT_SOCIAL_TARGETS || '2', 10);
+const AUTO_VOTE_ENABLED = process.env.AGENT_AUTO_VOTE === '1' || process.env.AGENT_AUTO_VOTE === 'true';
 const POSTS_MODEL = process.env.OPENAI_MODEL_FOR_POSTS || process.env.OPENAI_MODEL || 'google/gemini-2.0-flash-001';
 const REPLIES_MODEL = process.env.OPENAI_MODEL_FOR_REPLIES || process.env.OPENAI_MODEL || 'google/gemini-2.0-flash-001';
 const BANNED_CLAIMS = ['guaranteed profit', 'zero risk', 'cannot fail', 'proves business truth', 'absolute truth'];
@@ -785,7 +786,9 @@ async function socialInteract(): Promise<void> {
                 throw error;
             }
 
-            await votePost(post.id, 1, config);
+            if (AUTO_VOTE_ENABLED) {
+                await votePost(post.id, 1, config);
+            }
             repliedPostIds.add(post.id);
             if (!config.socialInteractions) {
                 config.socialInteractions = [];
@@ -898,6 +901,7 @@ Environment:
   AGENT_MAX_CYCLES=1                 Stop loop after N cycles
   COLOSSEUM_API_TIMEOUT_MS=15000     API timeout in ms
   COLOSSEUM_API_RETRIES=2            API retry count
+  AGENT_AUTO_VOTE=1                  Enable automatic forum voting
   AGENT_ACTIVE_SOCIAL_TARGETS=4      Replies per active cycle`);
 }
 
