@@ -4,12 +4,18 @@ import path from 'path';
 
 export async function GET() {
     try {
-        const configPath = path.join(process.cwd(), '.colosseum-agent.json');
-        if (!fs.existsSync(configPath)) {
-            return NextResponse.json({ error: 'Agent configuration not found' }, { status: 404 });
+        const configPath = process.env.AGENT_CONFIG_PATH || path.join(process.cwd(), '.colosseum-agent.json');
+        let config: any = {};
+
+        if (fs.existsSync(configPath)) {
+            config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         }
 
-        const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        // Fallback to environment variable if apiKey is not in file
+        if (!config.apiKey && process.env.COLOSSEUM_API_KEY) {
+            config.apiKey = process.env.COLOSSEUM_API_KEY;
+        }
+
         if (!config.apiKey) {
             return NextResponse.json({ error: 'API Key not configured' }, { status: 400 });
         }

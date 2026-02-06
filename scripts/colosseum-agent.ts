@@ -29,10 +29,17 @@ interface AgentConfig {
 }
 
 function loadConfig(): AgentConfig {
+    let config: AgentConfig = {};
     if (fs.existsSync(CONFIG_FILE)) {
-        return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+        config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
     }
-    return {};
+
+    // Fallback to environment variable if apiKey is not in file
+    if (!config.apiKey && process.env.COLOSSEUM_API_KEY) {
+        config.apiKey = process.env.COLOSSEUM_API_KEY;
+    }
+
+    return config;
 }
 
 function saveConfig(config: AgentConfig) {
