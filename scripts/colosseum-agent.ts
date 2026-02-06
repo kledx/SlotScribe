@@ -5,7 +5,7 @@ import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { buildAutoForumSystemPrompt, buildSocialReplySystemPrompt } from './colosseum-prompts.js';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -107,7 +107,10 @@ interface ParsedOptions {
 
 const rawArgs = process.argv.slice(2);
 const modeArg = rawArgs.find((arg) => arg.startsWith('--mode='));
-const parsedMode = (modeArg?.split('=')[1] || process.env.AGENT_MODE || 'default').toLowerCase();
+const parsedMode = (modeArg?.split('=')[1] || process.env.AGENT_MODE || 'default')
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .toLowerCase();
 const mode: AgentMode = parsedMode === 'active' ? 'active' : 'default';
 
 const options: ParsedOptions = {

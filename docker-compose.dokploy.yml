@@ -21,6 +21,9 @@ services:
       - BASE_URL=${BASE_URL}
       - COLOSSEUM_API_KEY=${COLOSSEUM_API_KEY}
       - AGENT_CONFIG_PATH=/app/data/.colosseum-agent.json
+      - AGENT_MODE=${AGENT_MODE:-active}
+      - OPENAI_MODEL_FOR_POSTS=${OPENAI_MODEL_FOR_POSTS:-gemini-3-pro-preview}
+      - OPENAI_MODEL_FOR_REPLIES=${OPENAI_MODEL_FOR_REPLIES:-gemini-3-flash-preview}
     volumes:
       - agent_data:/app/data
     restart: always
@@ -36,6 +39,9 @@ services:
       - BASE_URL=${BASE_URL}
       - COLOSSEUM_API_KEY=${COLOSSEUM_API_KEY}
       - AGENT_CONFIG_PATH=/app/data/.colosseum-agent.json
+      - AGENT_MODE=${AGENT_MODE:-active}
+      - OPENAI_MODEL_FOR_POSTS=${OPENAI_MODEL_FOR_POSTS:-gemini-3-pro-preview}
+      - OPENAI_MODEL_FOR_REPLIES=${OPENAI_MODEL_FOR_REPLIES:-gemini-3-flash-preview}
     volumes:
       - agent_data:/app/data
     restart: always
