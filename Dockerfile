@@ -46,11 +46,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # ==========================================
 # 针对 Autonomous Agent 的增强：
-# 1. 拷贝必要的脚本和文档文件
+# 1. 拷贝完整的 node_modules (因为 standalone 模式会修剪掉脚本需要的依赖)
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+# 2. 拷贝必要的脚本和文档文件
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nodejs /app/docs ./docs
 COPY --from=builder --chown=nextjs:nodejs /app/CHANGELOG.md ./CHANGELOG.md
-# 2. 安装 tsx 以支持在生产环境直接运行 ts 脚本
+# 3. 安装 tsx 以支持在生产环境直接运行 ts 脚本
 RUN npm install -g tsx typescript
 # ==========================================
 
