@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # SlotScribe Viewer (身体/控制面板)
+  viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # 这里不需要填具体值，Dokploy 会从容器环境变量中注入
+      - API_KEY=${API_KEY}
+      - BASE_URL=${BASE_URL}
+    restart: always
+
+  # SlotScribe Agent (大脑/自动执行)
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: [ "npx", "tsx", "scripts/colosseum-agent.ts", "agent:run" ]
+    environment:
+      - NODE_ENV=production
+      - API_KEY=${API_KEY}
+      - BASE_URL=${BASE_URL}
+      - AGENT_CONFIG_PATH=/app/data/.colosseum-agent.json
+    volumes:
+      - agent_data:/app/data
+    restart: always
+    depends_on:
+      - viewer
+
+volumes:
+  agent_data:

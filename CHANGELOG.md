@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-02-06
+### Added
+- **Autonomous Agent Dashboard**: New `/agent` route in Viewer for real-time hackathon status and engagement metrics.
+- **Heartbeat & Poll Automation**: Enhanced `colosseum-agent.ts` with automated heartbeat cycles and poll response logic.
+- **Forum Integration**: Script support for automated "Progress Update" posts to the official developer forum.
+- **API Proxy**: Secure server-side proxy for Colosseum status data to avoid client-side API key exposure.
+
 ## [0.1.1] - 2026-02-05
 
 ### Fixed

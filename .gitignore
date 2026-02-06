@@ -51,3 +51,6 @@ scripts/test-plugin-sendraw-no-buildtrace.ts
 scripts/test-versioned-sendtx-rejected.ts
 scripts/test-plugin-versioned-sendtx-rejected.ts
 scripts/test-verify-cluster-validation.ts
+.colosseum-agent.json
+docs/Colosseum_Agent_Evidence_Checklist.md
+docs/Colosseum_Submission_Walkthrough.md
