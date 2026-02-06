@@ -1,6 +1,6 @@
-/**
- * SlotScribeRecorder - Trace 璁板綍鍣?
- * 鐢ㄤ簬璁板綍 Agent 鎿嶄綔杞ㄨ抗骞惰绠?payloadHash
+﻿/**
+ * API note.
+ * API note.
  */
 
 import type {
@@ -60,15 +60,15 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 娣诲姞璁″垝姝ラ
+     * API note.
      */
     addPlanSteps(steps: string[]): void {
         this.payload.plan.steps.push(...steps);
     }
 
     /**
-     * 璁板綍宸ュ叿璋冪敤
-     * 鍖呰寮傛鍑芥暟锛岃嚜鍔ㄨ褰曞紑濮?缁撴潫鏃堕棿鍜岀粨鏋?
+     * API note.
+     * API note.
      */
     async recordToolCall<T>(
         name: string,
@@ -107,7 +107,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 鎵嬪姩璁板綍瀹¤姝ラ锛堝伐鍏疯皟鐢級
+     * API note.
      */
     addAuditStep(step: {
         name: string;
@@ -128,7 +128,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆浜ゆ槗鎽樿锛堥€氱敤鏂规硶锛?
+     * API note.
      */
     setTxSummary(summary: Partial<TxSummary>): void {
         this.payload.txSummary = {
@@ -137,10 +137,10 @@ export class SlotScribeRecorder {
         };
     }
 
-    // ==================== 渚挎嵎鏂规硶锛氬鏉備氦鏄撶被鍨?====================
+    // Note.
 
     /**
-     * 璁剧疆 Swap 浜ゆ槗
+     * API note.
      */
     setSwapTx(params: {
         feePayer: string;
@@ -157,7 +157,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆璐ㄦ娂浜ゆ槗
+     * API note.
      */
     setStakeTx(params: {
         feePayer: string;
@@ -174,7 +174,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆瑙ｈ川鎶间氦鏄?
+     * API note.
      */
     setUnstakeTx(params: {
         feePayer: string;
@@ -191,7 +191,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆 NFT 璐拱浜ゆ槗
+     * API note.
      */
     setNftBuyTx(params: {
         feePayer: string;
@@ -208,7 +208,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆 NFT 閾搁€犱氦鏄?
+     * API note.
      */
     setNftMintTx(params: {
         feePayer: string;
@@ -225,7 +225,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆娣诲姞娴佸姩鎬т氦鏄?
+     * API note.
      */
     setAddLiquidityTx(params: {
         feePayer: string;
@@ -242,7 +242,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆绉婚櫎娴佸姩鎬т氦鏄?
+     * API note.
      */
     setRemoveLiquidityTx(params: {
         feePayer: string;
@@ -259,7 +259,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆鍊熻捶浜ゆ槗
+     * API note.
      */
     setLendingTx(params: {
         feePayer: string;
@@ -283,14 +283,14 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆 Meme 甯佷氦鏄擄紙Pump.fun/Moonshot 绛夛級
+     * API note.
      */
     setMemeCoinTx(params: {
         feePayer: string;
         meme: MemeCoinDetails;
         programIds?: string[];
     }): void {
-        // 鏍规嵁 action 纭畾浜ゆ槗绫诲瀷
+        // Note.
         const type = params.meme.action === 'buy' || params.meme.action === 'sell'
             ? 'swap'
             : 'token_mint';
@@ -305,7 +305,7 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 璁剧疆绠€鍗曡浆璐︼紙鍚戝悗鍏煎锛?
+     * API note.
      */
     setTransferTx(params: {
         feePayer: string;
@@ -323,14 +323,14 @@ export class SlotScribeRecorder {
         };
     }
 
-    // ==================== 鏍稿績鏂规硶 ====================
+    // Note.
 
     /**
-     * 璁＄畻骞跺浐鍖?payloadHash
-     * 蹇呴』鍦?txSummary 濉厖瀹屾垚鍚庤皟鐢?
+     * API note.
+     * API note.
      */
     finalizePayloadHash(): string {
-        // 淇濆瓨 payload 蹇収锛堟繁鎷疯礉锛?
+        // Note.
         this.hashedPayload = JSON.parse(JSON.stringify(this.payload));
         const canonical = canonicalizeJson(this.hashedPayload);
         this.payloadHash = sha256Hex(canonical);
@@ -338,14 +338,14 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 鑾峰彇褰撳墠 payloadHash锛堝鏋滃凡璁＄畻锛?
+     * API note.
      */
     getPayloadHash(): string | null {
         return this.payloadHash;
     }
 
     /**
-     * 闄勫姞閾句笂淇℃伅
+     * API note.
      */
     attachOnChain(signature: string, info?: Partial<Omit<OnChainInfo, 'signature'>>): void {
         this.onChain = {
@@ -355,14 +355,14 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 鏋勫缓瀹屾暣鐨?Trace 瀵硅薄
+     * API note.
      */
     buildTrace(): Trace {
         if (!this.payloadHash || !this.hashedPayload) {
             throw new Error('payloadHash not finalized. Call finalizePayloadHash() first.');
         }
 
-        // 鏍规嵁浜ゆ槗绫诲瀷鑷姩閫夋嫨鐗堟湰
+        // Note.
         const version = this.determineVersion();
 
         const trace: Trace = {
@@ -381,20 +381,20 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 鏍规嵁 txSummary 鍐呭纭畾 Trace 鐗堟湰
-     * - BBX1: 浠呭寘鍚畝鍗?transfer锛堟棤 type 鎴?type='transfer'涓旀棤澶嶆潅瀛楁锛?
-     * - BBX2: 鍖呭惈澶嶆潅浜ゆ槗绫诲瀷锛坰wap/stake/nft/lending/meme 绛夛級
+     * API note.
+     * API note.
+     * API note.
      */
     private determineVersion(): TraceVersion {
         const summary = this.payload.txSummary;
 
-        // 濡傛灉鏈夊鏉備氦鏄撳瓧娈碉紝浣跨敤 BBX2
+        // Note.
         if (summary.swap || summary.stake || summary.nft ||
             summary.lp || summary.lending || summary.meme || summary.custom) {
             return 'BBX2';
         }
 
-        // 濡傛灉 type 鏄鏉傜被鍨嬶紝浣跨敤 BBX2
+        // Note.
         const complexTypes = [
             'swap', 'stake', 'unstake', 'nft_mint', 'nft_buy', 'nft_list',
             'token_mint', 'lp_add', 'lp_remove', 'lending_supply',
@@ -405,25 +405,25 @@ export class SlotScribeRecorder {
             return 'BBX2';
         }
 
-        // 榛樿浣跨敤 BBX1锛堝悜鍚庡吋瀹癸級
+        // Note.
         return 'BBX1';
     }
 
     /**
-     * 鑾峰彇褰撳墠 payload锛堝彧璇伙級
+     * API note.
      */
     getPayload(): Readonly<TracePayload> {
         return this.payload;
     }
 
     /**
-     * 娓呯悊杈撳嚭鏁版嵁锛岄伩鍏嶅瓨鍌ㄨ繃澶ф垨涓嶅彲搴忓垪鍖栫殑瀵硅薄
+     * API note.
      */
     private sanitizeOutput(output: unknown): unknown {
         try {
-            // 灏濊瘯 JSON 搴忓垪鍖栵紝濡傛灉澶辫触鍒欒繑鍥炲瓧绗︿覆琛ㄧず
+            // Note.
             const str = JSON.stringify(output);
-            // 闄愬埗澶у皬
+            // Note.
             if (str.length > 100000) {
                 return { _truncated: true, preview: str.slice(0, 1000) + '...' };
             }
@@ -434,9 +434,9 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 銆愭帹鑽愩€戞樉寮忓彂閫佸苟閿氬畾浜ゆ槗
+     * API note.
      * 
-     * 鑷姩瀹屾垚锛氭敞鍏?Memo -> 鍙戦€佷氦鏄?-> 涓婁紶 Trace
+     * API note.
      */
     async sendTransaction(
         connection: Connection,
@@ -504,10 +504,10 @@ export class SlotScribeRecorder {
     }
 
     /**
-     * 銆愰€氱敤鍔╂墜銆戝悓姝ュ凡鍙戦€佺殑浜ゆ槗鍒?SlotScribe
+     * API note.
      * 
-     * 閫傜敤浜庣敤鎴蜂娇鐢?Anchor, Jupiter 鎴栧叾浠栫涓夋柟 SDK 鍙戦€佷氦鏄撶殑鍦烘櫙銆?
-     * 鍦ㄥ悗鍙扮瓑寰呬氦鏄撶‘璁ゅ悗鑷姩涓婁紶瀹¤鎶ュ憡銆?
+     * API note.
+     * API note.
      */
     syncOnChain(
         signature: TransactionSignature,
@@ -519,11 +519,11 @@ export class SlotScribeRecorder {
     ): void {
         const followUp = async () => {
             try {
-                // 绛夊緟纭
+                // Note.
                 await connection.confirmTransaction(signature, 'confirmed');
                 this.attachOnChain(signature, { status: 'confirmed' });
 
-                // 鑷姩涓婁紶
+                // Note.
                 if (options.autoUpload !== false) {
                     await uploadTraceReliable(this.buildTrace(), {
                         baseUrl: options.baseUrl,
@@ -539,21 +539,21 @@ export class SlotScribeRecorder {
             }
         };
 
-        followUp(); // 蹇呴』鏄紓姝ョ殑锛屼笉褰卞搷鐢ㄦ埛涓讳笟鍔℃祦
+        followUp(); // Note.
     }
 }
 
-// ==================== 渚挎嵎鍑芥暟锛氬垱寤?Token 淇℃伅 ====================
+// Note.
 
 /**
- * 鍒涘缓 Token 淇℃伅
+ * API note.
  */
 export function token(mint: string, symbol?: string, decimals?: number): TokenInfo {
     return { mint, symbol, decimals };
 }
 
 /**
- * 甯哥敤 Token
+ * API note.
  */
 export const TOKENS = {
     SOL: { mint: 'So11111111111111111111111111111111111111112', symbol: 'SOL', decimals: 9 },

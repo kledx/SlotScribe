@@ -1,6 +1,6 @@
-/**
+﻿/**
  * SlotScribe SDK
- * 缁熶竴瀵煎嚭
+ * API note.
  */
 
 // Types - Core

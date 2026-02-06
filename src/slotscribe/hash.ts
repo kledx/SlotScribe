@@ -1,12 +1,12 @@
-/**
- * SHA256 哈希计算
+﻿/**
+ * API note.
  * 
- * 采用纯 JS 实现以确保在 Node.js 和浏览器环境下都能同步运行，
- * 且无需外部依赖或复杂的 Polyfill。
+ * API note.
+ * API note.
  */
 
 /**
- * 核心 SHA-256 算法实现 (同步)
+ * API note.
  */
 function sha256Sync(data: Uint8Array): string {
     const hash = (words: Int32Array, length: number) => {
@@ -76,10 +76,10 @@ function sha256Sync(data: Uint8Array): string {
 }
 
 /**
- * 计算输入的 SHA256 哈希值
+ * API note.
  * 
- * @param input - 字符串或 Uint8Array
- * @returns 64 位小写十六进制字符串
+ * API note.
+ * API note.
  */
 export function sha256Hex(input: string | Uint8Array): string {
     let bytes: Uint8Array;
@@ -89,6 +89,6 @@ export function sha256Hex(input: string | Uint8Array): string {
         bytes = input;
     }
 
-    // 优先使用 JS 实现以保证跨环境同步一致性
+    // Note.
     return sha256Sync(bytes);
 }

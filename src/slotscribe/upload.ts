@@ -1,4 +1,4 @@
-import type { Trace } from './types';
+﻿import type { Trace } from './types';
 
 export interface UploadResult {
     success: boolean;

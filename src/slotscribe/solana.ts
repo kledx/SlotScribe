@@ -1,5 +1,5 @@
-/**
- * Solana 相关工具函数
+﻿/**
+ * API note.
  */
 
 import {
@@ -18,8 +18,8 @@ export const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqX
 export const SYSTEM_PROGRAM_ID = new PublicKey('11111111111111111111111111111111');
 
 /**
- * 规范化集群名称
- * 支持常见的缩写和错别字转换
+ * API note.
+ * API note.
  */
 export function normalizeCluster(cluster: string): SolanaCluster {
     const name = cluster.toLowerCase().trim();
@@ -34,7 +34,7 @@ export function normalizeCluster(cluster: string): SolanaCluster {
 }
 
 /**
- * 获取 Solana RPC URL
+ * API note.
  */
 export function getRpcUrl(cluster: SolanaCluster | string, overrideUrl?: string): string {
     if (overrideUrl) {
@@ -58,7 +58,7 @@ export function getRpcUrl(cluster: SolanaCluster | string, overrideUrl?: string)
 }
 
 /**
- * 创建 Solana Connection
+ * API note.
  */
 export function getConnection(cluster: SolanaCluster | string, overrideUrl?: string): Connection {
     const url = getRpcUrl(cluster, overrideUrl);
@@ -66,7 +66,7 @@ export function getConnection(cluster: SolanaCluster | string, overrideUrl?: str
 }
 
 /**
- * 构建 Memo 指令
+ * API note.
  */
 export function buildMemoIx(memo: string): TransactionInstruction {
     return new TransactionInstruction({
@@ -77,13 +77,13 @@ export function buildMemoIx(memo: string): TransactionInstruction {
 }
 
 /**
- * 解析 SlotScribe Memo 内容
- * 格式: BBX1 payload=<hash>
+ * API note.
+ * API note.
  */
 export function extractSlotScribeMemo(memoData: string): { payloadHash?: string; raw: string } {
     const raw = memoData.trim();
 
-    // 匹配 SS1 payload=<hash> 或 BBX1 payload=<hash> 格式
+    // Note.
     const match = raw.match(/^(SS1|BBX1)\s+payload=([a-fA-F0-9]{64})$/);
 
     if (match) {
@@ -97,7 +97,7 @@ export function extractSlotScribeMemo(memoData: string): { payloadHash?: string;
 }
 
 /**
- * 从交易响应中查找 Memo 指令数据
+ * API note.
  */
 export function findMemoInTransaction(
     txResponse: ParsedTransactionWithMeta | VersionedTransactionResponse | null
@@ -109,7 +109,7 @@ export function findMemoInTransaction(
 
     const allMemos: string[] = [];
 
-    // 1. 从 parsed transaction 获取
+    // Note.
     if ('transaction' in txResponse && txResponse.transaction) {
         const tx = txResponse.transaction;
         if ('message' in tx && tx.message) {
@@ -137,7 +137,7 @@ export function findMemoInTransaction(
         }
     }
 
-    // 2. 从 inner instructions 获取
+    // Note.
     if (meta.innerInstructions) {
         for (const inner of meta.innerInstructions) {
             for (const ix of inner.instructions) {
@@ -153,11 +153,11 @@ export function findMemoInTransaction(
         }
     }
 
-    // 优先选择包含 SlotScribe 特征码的 Memo
+    // Note.
     const slotScribeMemo = allMemos.find(m => m.includes('BBX1 payload=') || m.includes('SS1 payload='));
     if (slotScribeMemo) return slotScribeMemo;
 
-    // 如果没有特征码，但有日志，尝试从日志获取（备选方案）
+    // Note.
     if (meta.logMessages) {
         for (const log of meta.logMessages) {
             if (log.includes('BBX1 payload=') || log.includes('SS1 payload=')) {
@@ -167,21 +167,21 @@ export function findMemoInTransaction(
         }
     }
 
-    // 最后退而求其次返回第一个找到的 Memo
+    // Note.
     return allMemos[0] || null;
 }
 
 /**
- * 解码 Memo 数据
+ * API note.
  */
 function decodeMemoData(data: string): string {
     try {
-        // 尝试 base58 解码
+        // Note.
         const bytes = Buffer.from(data, 'base64');
         return new TextDecoder().decode(bytes);
     } catch {
         try {
-            // 直接尝试 UTF-8
+            // Note.
             return data;
         } catch {
             return data;
@@ -190,7 +190,7 @@ function decodeMemoData(data: string): string {
 }
 
 /**
- * 从交易响应中提取摘要信息
+ * API note.
  */
 export function summarizeTransaction(
     txResponse: ParsedTransactionWithMeta | VersionedTransactionResponse | null
@@ -204,10 +204,10 @@ export function summarizeTransaction(
         return result;
     }
 
-    // 获取 fee
+    // Note.
     result.fee = txResponse.meta.fee;
 
-    // 获取 program IDs
+    // Note.
     const programSet = new Set<string>();
 
     if ('transaction' in txResponse && txResponse.transaction) {
@@ -234,7 +234,7 @@ export function summarizeTransaction(
                         programSet.add(id);
                     }
 
-                    // 尝试解析 transfer 信息
+                    // Note.
                     if (ix.program === 'system' && ix.parsed?.type === 'transfer') {
                         result.to = ix.parsed.info?.destination;
                         result.lamports = ix.parsed.info?.lamports;
@@ -250,7 +250,7 @@ export function summarizeTransaction(
 }
 
 /**
- * 获取交易（支持 parsed 模式）
+ * API note.
  */
 export async function getParsedTransaction(
     connection: Connection,

@@ -14,31 +14,31 @@ import type { SolanaCluster } from './types';
 export interface SlotScribePluginOptions {
     cluster: SolanaCluster | string;
     baseUrl?: string;
-    /** 鏄惁鑷姩涓婁紶鍒颁簯绔紝榛樿涓?true */
+    /** API note. */
     autoUpload?: boolean;
-    /** 榛樿鎰忓浘璇存槑 */
+    /** API note. */
     defaultIntent?: string;
 }
 
 /**
- * SlotScribe 鏃犳劅鍖呰鍣?
+ * API note.
  * 
- * 鍔ㄦ€佷唬鐞嗘爣鍑嗙殑 Solana Connection 瀵硅薄锛?
- * 鎷︽埅骞惰嚜鍔ㄥ鐞?SlotScribe 鐨勫綍鍒躲€侀敋瀹氫笌涓婁紶娴佺▼銆?
+ * API note.
+ * API note.
  */
 export function withSlotScribe(
     connection: Connection,
     options: SlotScribePluginOptions
 ): Connection {
-    // 浣跨敤 Proxy 鎷︽埅 connection 鐨勬柟娉?
+    // Note.
     const proxy = new Proxy(connection, {
         get(target, prop, receiver) {
             const originalValue = Reflect.get(target, prop, receiver);
 
-            // 鎴戜滑鍙嫤鎴彂閫佷氦鏄撶殑鏂规硶
+            // Note.
             if (prop === 'sendTransaction' || prop === 'sendRawTransaction') {
                 return async (...args: any[]) => {
-                    // 1. 鍒濆鍖栧綍鍒?
+                    // Note.
                     const intent = (args[2] as any)?.intent || options.defaultIntent || 'Agent Execution';
                     const recorder = new SlotScribeRecorder({
                         intent,
@@ -48,7 +48,7 @@ export function withSlotScribe(
                     let signature: TransactionSignature;
 
                     if (prop === 'sendTransaction') {
-                        // args[0] 鏄?tx, args[1] 鏄?signers
+                        // Note.
                         const tx = args[0] as Transaction | VersionedTransaction;
                         const signers = args[1] as Signer[];
 
@@ -75,25 +75,25 @@ export function withSlotScribe(
                             );
                         }
 
-                        // 璋冪敤鍘熷鏂规硶
+                        // Note.
                         signature = await originalValue.apply(target, args);
 
                     } else {
-                        // sendRawTransaction 涓嶉渶瑕佹嫤鎴敞鍏ワ紝閫氬父鏄洜涓虹敤鎴峰凡缁忕绾跨鍚嶄簡
-                        // 杩欑鎯呭喌鍙兘鍋氬悗缁殑鏁版嵁鍏宠仈
+                        // Note.
+                        // Note.
                         signature = await originalValue.apply(target, args);
                     }
 
-                    // 2. 寮傛澶勭悊鍚庣画娴佺▼锛堜笉闃诲涓氬姟杩斿洖 signature锛?
+                    // Note.
                     const runFollowUp = async () => {
                         try {
-                            // 绛夊緟纭
+                            // Note.
                             await target.confirmTransaction(signature, 'confirmed');
 
-                            // 鍏宠仈閾句笂 ID
+                            // Note.
                             recorder.attachOnChain(signature, { status: 'confirmed' });
 
-                            // 涓婁紶
+                            // Note.
                             if (options.autoUpload !== false) {
                                 if (recorder.getPayloadHash()) {
                                     await uploadTrace(recorder.buildTrace(), {
@@ -109,13 +109,13 @@ export function withSlotScribe(
                         }
                     };
 
-                    runFollowUp(); // 鍚庡彴杩愯
+                    runFollowUp(); // Note.
 
                     return signature;
                 };
             }
 
-            // 鍏朵粬鏂规硶淇濇寔鍘熸牱
+            // Note.
             return typeof originalValue === 'function'
                 ? originalValue.bind(target)
                 : originalValue;
