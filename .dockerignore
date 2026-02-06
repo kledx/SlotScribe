@@ -24,7 +24,6 @@ npm-debug.log*
 
 # Data & Docs
 data/
-docs/
 uiux/
 HACKATHON.md
 README*.md
