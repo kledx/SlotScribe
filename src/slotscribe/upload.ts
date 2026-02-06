@@ -60,6 +60,18 @@ function shouldRetry(err: unknown, status?: number): boolean {
         return status >= 500 || status === 408 || status === 429;
     }
 
+    if (typeof err === 'string') {
+        const message = err.toLowerCase();
+        return (
+            message.includes('fetch') ||
+            message.includes('network') ||
+            message.includes('timeout') ||
+            message.includes('timed out') ||
+            message.includes('econnreset') ||
+            message.includes('etimedout')
+        );
+    }
+
     if (err instanceof Error) {
         if (err.name === 'AbortError') {
             return true;

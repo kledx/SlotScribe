@@ -85,8 +85,8 @@ export default function RootLayout({
                                 </span>
                             </div>
                             <div className="flex items-center gap-8 text-sm text-gray-500">
-                                <Link href="/docs#privacy" className="hover:text-brand-green transition-colors">Privacy Policy</Link>
-                                <Link href="/docs#terms" className="hover:text-brand-green transition-colors">Terms of Service</Link>
+                                <Link href="/docs?section=overview" className="hover:text-brand-green transition-colors">Privacy Policy</Link>
+                                <Link href="/docs?section=verification-loop" className="hover:text-brand-green transition-colors">Terms of Service</Link>
                                 <Link href="https://x.com/SlotScribe" target="_blank" className="hover:text-brand-green transition-colors font-bold text-brand-dark">Twitter / X</Link>
                             </div>
                         </div>
@@ -96,5 +96,4 @@ export default function RootLayout({
         </html>
     );
 }
-
 
