@@ -62,7 +62,23 @@ interface AgentStatus {
         heartbeatCount: number;
         lastHeartbeatAt: string | null;
         projectId: string | null;
+        pendingActionsCount: number;
+        dayKey: string;
+        todayMetrics: {
+            posts: number;
+            comments: number;
+            votes: number;
+            heartbeats: number;
+            queueRetries: number;
+            queueFailures: number;
+        };
     };
+    recentInteractions: {
+        postId: number;
+        postTitle: string;
+        replyBody: string;
+        repliedAt: string;
+    }[];
 }
 
 export default function AgentDashboard() {
@@ -422,6 +438,46 @@ export default function AgentDashboard() {
                         <p className="text-xs text-brand-dark/50 font-medium leading-relaxed pl-9">
                             Automatic heartbeat cycle detected and synced with Colosseum network API.
                         </p>
+                    </div>
+
+                    {/* Agent Report Card */}
+                    <div className="p-8 border border-brand-dark/5 bg-white/40 rounded-[3rem]">
+                        <h4 className="font-black text-sm uppercase tracking-widest text-brand-dark/40 mb-6">Agent Report</h4>
+                        <div className="space-y-3 mb-6">
+                            <div className="p-4 bg-white/60 rounded-2xl flex items-center justify-between border border-brand-dark/5">
+                                <span className="text-xs font-bold text-brand-dark">KPI Day</span>
+                                <span className="text-xs font-black text-brand-dark">{data.localConfig.dayKey}</span>
+                            </div>
+                            <div className="p-4 bg-white/60 rounded-2xl flex items-center justify-between border border-brand-dark/5">
+                                <span className="text-xs font-bold text-brand-dark">Posts / Comments / Votes</span>
+                                <span className="text-xs font-black text-brand-green">
+                                    {data.localConfig.todayMetrics.posts} / {data.localConfig.todayMetrics.comments} / {data.localConfig.todayMetrics.votes}
+                                </span>
+                            </div>
+                            <div className="p-4 bg-white/60 rounded-2xl flex items-center justify-between border border-brand-dark/5">
+                                <span className="text-xs font-bold text-brand-dark">Queue (Pending)</span>
+                                <span className={`text-xs font-black ${data.localConfig.pendingActionsCount > 0 ? 'text-amber-500' : 'text-brand-green'}`}>
+                                    {data.localConfig.pendingActionsCount}
+                                </span>
+                            </div>
+                            <div className="p-4 bg-white/60 rounded-2xl flex items-center justify-between border border-brand-dark/5">
+                                <span className="text-xs font-bold text-brand-dark">Queue Retry / Fail</span>
+                                <span className="text-xs font-black text-brand-dark">
+                                    {data.localConfig.todayMetrics.queueRetries} / {data.localConfig.todayMetrics.queueFailures}
+                                </span>
+                            </div>
+                        </div>
+                        <h5 className="font-black text-[10px] uppercase tracking-widest text-brand-dark/40 mb-3">Recent Replies</h5>
+                        <div className="space-y-2 max-h-44 overflow-auto pr-1">
+                            {data.recentInteractions?.length ? data.recentInteractions.map((item) => (
+                                <div key={`${item.postId}-${item.repliedAt}`} className="p-3 bg-white/70 rounded-xl border border-brand-dark/5">
+                                    <p className="text-[11px] font-bold text-brand-dark truncate">{item.postTitle}</p>
+                                    <p className="text-[10px] text-brand-dark/40">{new Date(item.repliedAt).toLocaleString()}</p>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-brand-dark/40 italic">No reply activity yet.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

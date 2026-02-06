@@ -49,17 +49,34 @@ export async function GET() {
         const repliedIds = config.repliedPostIds || [];
         const interactions = config.socialInteractions || [];
 
-        // Enrich with local config data (heartbeat count, etc.)
+        const dayKey = new Date().toISOString().slice(0, 10);
+        const dailyMetrics = config.dailyMetrics || {};
+        const todayMetrics = dailyMetrics[dayKey] || {
+            posts: 0,
+            comments: 0,
+            votes: 0,
+            heartbeats: 0,
+            queueRetries: 0,
+            queueFailures: 0,
+        };
+        const pendingActions = config.pendingActions || [];
+        const recentInteractions = interactions.slice(-5).reverse();
+
+        // Enrich with local config data (heartbeat count, queue status, and KPI snapshot)
         return NextResponse.json({
             ...statusData,
             latestPosts: allPosts.slice(0, 15), // Top 15 for neighborhood
             myPosts: myPosts, // My own threads
             repliedPostIds: repliedIds, // IDs of posts I've replied to
             interactions: interactions, // Detailed replies with body
+            recentInteractions, // Last 5 interactions
             localConfig: {
                 heartbeatCount: config.heartbeatCount || 0,
                 lastHeartbeatAt: config.lastHeartbeatAt || null,
                 projectId: config.projectId || null,
+                pendingActionsCount: pendingActions.length,
+                todayMetrics,
+                dayKey,
             }
         });
     } catch (error: any) {
