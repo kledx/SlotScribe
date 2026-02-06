@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import {
     Search,
     ChevronRight,
@@ -63,16 +62,16 @@ export default function DocsPage() {
     const [activeId, setActiveId] = useState('overview');
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const searchParams = useSearchParams();
 
     useEffect(() => {
-        const section = searchParams.get('section');
+        if (typeof window === 'undefined') return;
+        const section = new URLSearchParams(window.location.search).get('section');
         if (!section) return;
         const exists = TOC_ITEMS.some((item) => item.id === section);
         if (exists) {
             setActiveId(section);
         }
-    }, [searchParams]);
+    }, []);
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
