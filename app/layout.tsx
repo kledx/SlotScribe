@@ -40,7 +40,7 @@ export default function RootLayout({
                                     <Link href="/" className="hover:text-brand-green transition-colors">Home</Link>
                                     <Link href="/verify" className="hover:text-brand-green transition-colors">Verify</Link>
                                     <Link href="/explorer" className="hover:text-brand-green transition-colors">Explorer</Link>
-                                    <Link href="/docs" className="hover:text-brand-green transition-colors">Docs</Link>
+                                    <Link href="/docs?section=installation" className="hover:text-brand-green transition-colors">Docs</Link>
                                 </nav>
 
                                 <div className="flex items-center gap-3">
@@ -59,7 +59,7 @@ export default function RootLayout({
                                     </div>
 
                                     <Link
-                                        href="/docs"
+                                        href="/docs?section=installation"
                                         className="bg-brand-dark hover:bg-black text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg hover:shadow-brand-green/10 active:scale-95 text-[11px]"
                                     >
                                         Get Started
@@ -96,4 +96,5 @@ export default function RootLayout({
         </html>
     );
 }
+
 

@@ -263,9 +263,9 @@ function ReportContent({ signature }: { signature: string }) {
                     <h2 className="text-sm font-bold text-gray-500 uppercase tracking-[0.3em]">Official Audit Receipt</h2>
                 </div>
                 <div className="p-10">
-                    <div className="flex flex-col md:flex-row items-start gap-8 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] items-start gap-8 mb-12">
                         <div className="flex-1 min-w-0">
-                            <h3 className="text-3xl font-black text-brand-dark tracking-tight mb-3">
+                            <h3 className="text-3xl font-black text-brand-dark tracking-tight mb-3 break-words">
                                 {result.trace?.payload.intent || 'Generic Action'}
                             </h3>
                             <div className="flex items-center gap-2 group cursor-pointer min-w-0" onClick={() => signature !== 'unverified' && copyToClipboard(signature)}>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -22,7 +22,7 @@ export default function HomePage() {
                                 Verify Transaction
                             </Link>
                             <Link
-                                href="/docs"
+                                href="/docs?section=quickstart"
                                 className="inline-flex items-center justify-center px-10 py-5 bg-white border-2 border-brand-dark/10 hover:border-brand-green/30 text-brand-dark font-black rounded-2xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] w-fit text-xl uppercase tracking-widest"
                             >
                                 Get Started
@@ -162,7 +162,7 @@ console.log('Trace Hash:', payloadHash);`}
 
                     <div className="flex justify-center mt-4">
                         <Link
-                            href="/docs"
+                            href="/docs?section=quickstart"
                             className="group flex items-center gap-3 bg-brand-dark text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl"
                         >
                             Explore Full Documentation
@@ -195,7 +195,7 @@ function LiveTraceFeed() {
 
     if (traces.length === 0) return null;
 
-    // 复制数组以实现无缝滚动
+    // 澶嶅埗鏁扮粍浠ュ疄鐜版棤缂濇粴鍔?
     const feedItems = [...traces, ...traces, ...traces];
 
     return (
@@ -306,3 +306,4 @@ function ShieldCheckIcon() {
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></svg>
     );
 }
+

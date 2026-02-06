@@ -1,7 +1,8 @@
 ﻿'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
     Search,
     ChevronRight,
@@ -35,6 +36,7 @@ const DOCS_NAV = [
         title: 'SDK Integration',
         items: [
             { id: 'sdk-usage', title: 'Basic Usage' },
+            { id: 'ai-integration', title: 'AI Integration' },
             { id: 'custom-traces', title: 'Recording Steps' },
             { id: 'anchoring', title: 'On-chain Anchoring' },
         ]
@@ -61,6 +63,16 @@ export default function DocsPage() {
     const [activeId, setActiveId] = useState('overview');
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const section = searchParams.get('section');
+        if (!section) return;
+        const exists = TOC_ITEMS.some((item) => item.id === section);
+        if (exists) {
+            setActiveId(section);
+        }
+    }, [searchParams]);
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -77,7 +89,7 @@ export default function DocsPage() {
                                 Why SlotScribe?
                             </h1>
                             <p className="text-lg text-gray-500 font-medium leading-relaxed mb-8">
-                                As AI Agents take custody of assets and execute complex on-chain logic, **transparency is no longer optional**.
+                                As AI Agents take custody of assets and execute complex on-chain logic, transparency is no longer optional.
                             </p>
 
                             <div className="grid gap-6">
@@ -122,55 +134,105 @@ export default function DocsPage() {
                                 Quickstart
                             </h1>
                             <p className="text-lg text-gray-500 font-medium leading-relaxed">
-                                Choose the integration pattern that best fits your agent's infrastructure.
+                                Fastest path: create recorder, send one transfer with Memo auto-injection, then get a verifiable report link.
                             </p>
                         </section>
 
-                        <div className="grid grid-cols-1 gap-12">
-                            {/* Pattern 1: Explicit Helper */}
+                        <div className="grid grid-cols-1 gap-10">
                             <section className="space-y-6">
                                 <h2 className="text-2xl font-black text-brand-dark flex items-center gap-3">
                                     <span className="w-8 h-8 rounded-full bg-brand-green text-white text-sm flex items-center justify-center">1</span>
-                                    Explicit Helper (Recommended)
+                                    Copy-Paste Example (Fastest)
                                 </h2>
-                                <p className="text-gray-500 font-medium">
-                                    Best for most developers. Balanced between transparency and convenience.
-                                </p>
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 md:p-8">
                                     <pre className="font-mono text-xs md:text-sm text-gray-300 leading-relaxed overflow-x-auto">
-                                        {`const signature = await recorder.sendTransaction(
-  connection, 
-  transaction, 
-  [payer]
-);`}
+                                        {`import { Keypair, SystemProgram, Transaction } from '@solana/web3.js';
+import { SlotScribeRecorder, getConnection } from 'slotscribe';
+
+const cluster = 'devnet';
+const connection = getConnection(cluster);
+const payer = Keypair.generate();
+const to = payer.publicKey; // self-transfer for testing
+const lamports = 1000;
+
+const recorder = new SlotScribeRecorder({
+  intent: 'Quickstart transfer test',
+  cluster,
+});
+
+recorder.setTransferTx({
+  feePayer: payer.publicKey.toBase58(),
+  to: to.toBase58(),
+  lamports,
+});
+
+const tx = new Transaction().add(
+  SystemProgram.transfer({
+    fromPubkey: payer.publicKey,
+    toPubkey: to,
+    lamports,
+  })
+);
+
+// Auto flow: finalize hash -> inject memo -> send -> confirm -> upload trace
+const signature = await recorder.sendTransaction(connection, tx, [payer], {
+  autoUpload: true,
+  baseUrl: 'https://slotscribe.xyz',
+});
+
+const trace = recorder.buildTrace();
+console.log('sig=', signature);
+console.log('hash=', trace.payloadHash);
+console.log('verify=', \`https://slotscribe.xyz/verify?cluster=\${cluster}&sig=\${signature}&hash=\${trace.payloadHash}\`);`}
                                     </pre>
                                 </div>
                                 <div className="flex flex-wrap gap-4 text-sm text-gray-500 font-medium">
-                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">[OK] Auto-injects Memo</span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">[OK] Auto-uploads Trace</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">[OK] Auto Memo Injection</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">[OK] Auto Trace Upload</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-brand-green/5 text-brand-green rounded-full">[OK] Shareable Verify URL</span>
                                 </div>
                             </section>
 
                             <hr className="border-brand-dark/5" />
 
-                            {/* Pattern 2: Third-Party Sync */}
                             <section className="space-y-6">
                                 <h2 className="text-2xl font-black text-brand-dark flex items-center gap-3">
                                     <span className="w-8 h-8 rounded-full bg-brand-dark text-white text-sm flex items-center justify-center">2</span>
-                                    Third-Party Sync (Anchor/Jupiter)
+                                    Explicit Helper (Recommended)
                                 </h2>
                                 <p className="text-gray-500 font-medium">
-                                    If you use other SDKs to send transactions, use <code>syncOnChain</code> to handle the disclosure.
+                                    Best balance between control and convenience for most teams.
                                 </p>
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 md:p-8">
                                     <pre className="font-mono text-xs md:text-sm text-gray-300 leading-relaxed overflow-x-auto">
-                                        {`// 1. Manually add memo before sending
+                                        {`const signature = await recorder.sendTransaction(
+  connection,
+  transaction,
+  [payer]
+);`}
+                                    </pre>
+                                </div>
+                            </section>
+
+                            <hr className="border-brand-dark/5" />
+
+                            <section className="space-y-6">
+                                <h2 className="text-2xl font-black text-brand-dark flex items-center gap-3">
+                                    <span className="w-8 h-8 rounded-full bg-gray-700 text-white text-sm flex items-center justify-center">3</span>
+                                    Third-Party Sync (Anchor/Jupiter)
+                                </h2>
+                                <p className="text-gray-500 font-medium">
+                                    If your transaction is sent by another SDK, manually add Memo then call <code>syncOnChain</code>.
+                                </p>
+                                <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 md:p-8">
+                                    <pre className="font-mono text-xs md:text-sm text-gray-300 leading-relaxed overflow-x-auto">
+                                        {`// 1) Finalize hash and add memo before sending
 tx.add(buildMemoIx(\`SS1 payload=\${hash}\`));
 
-// 2. Send via third-party SDK
+// 2) Send via third-party SDK
 const sig = await program.methods.swap().rpc();
 
-// 3. Sync and upload (Async)
+// 3) Sync confirmation + upload
 recorder.syncOnChain(sig, connection);`}
                                     </pre>
                                 </div>
@@ -178,25 +240,25 @@ recorder.syncOnChain(sig, connection);`}
 
                             <hr className="border-brand-dark/5" />
 
-                            {/* Pattern 3: Invisible Plugin */}
                             <section className="space-y-6">
                                 <h2 className="text-2xl font-black text-brand-dark flex items-center gap-3">
-                                    <span className="w-8 h-8 rounded-full bg-gray-200 text-brand-dark text-sm flex items-center justify-center">3</span>
+                                    <span className="w-8 h-8 rounded-full bg-gray-200 text-brand-dark text-sm flex items-center justify-center">4</span>
                                     Invisible Plugin (Proxy)
                                 </h2>
                                 <p className="text-gray-500 font-medium">
-                                    Zero logic change. Just wrap your connection. Ideal for massive legacy agents.
+                                    Wrap an existing connection with minimal code changes.
                                 </p>
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 md:p-8">
                                     <pre className="font-mono text-xs md:text-sm text-gray-300 leading-relaxed overflow-x-auto">
                                         {`const connection = withSlotScribe(new Connection(rpc), {
   cluster: 'mainnet-beta',
-  autoUpload: true
+  autoUpload: true,
 });
 
-// Legacy transactions are auto-recorded with memo injection.
-// VersionedTransaction requires manual memo + recorder.syncOnChain(...)
-await connection.sendTransaction(tx, [payer]);`}
+// Legacy transactions: auto memo + auto trace upload
+await connection.sendTransaction(tx, [payer]);
+
+// VersionedTransaction: add memo manually, then syncOnChain(...)`}
                                     </pre>
                                 </div>
                             </section>
@@ -212,24 +274,28 @@ await connection.sendTransaction(tx, [payer]);`}
                                 Installation
                             </h1>
                             <p className="text-lg text-gray-500 font-medium leading-relaxed">
-                                Install the SlotScribe SDK in your project to start recording agent traces.
+                                Install the latest SDK from npm, verify the installed version, then run the quickstart flow.
                             </p>
                         </section>
 
                         <section className="space-y-6">
-                            <h2 className="text-2xl font-black text-brand-dark tracking-tight">Package Managers</h2>
+                            <h2 className="text-2xl font-black text-brand-dark tracking-tight">Install Latest from npm</h2>
                             <div className="flex flex-col gap-4">
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 font-mono text-sm">
-                                    <div className="text-gray-500 mb-2"># In this repository</div>
-                                    <code className="text-brand-green">$ pnpm install</code>
+                                    <div className="text-gray-500 mb-2"># npm (latest)</div>
+                                    <code className="text-brand-green">$ npm i slotscribe@latest @solana/web3.js</code>
                                 </div>
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 font-mono text-sm">
-                                    <div className="text-gray-500 mb-2"># Build SDK bundle (optional)</div>
-                                    <code className="text-brand-green">$ pnpm build:sdk</code>
+                                    <div className="text-gray-500 mb-2"># pnpm (latest)</div>
+                                    <code className="text-brand-green">$ pnpm add slotscribe@latest @solana/web3.js</code>
                                 </div>
                                 <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 font-mono text-sm">
-                                    <div className="text-gray-500 mb-2"># Run demo</div>
-                                    <code className="text-brand-green">$ pnpm demo</code>
+                                    <div className="text-gray-500 mb-2"># Check latest published version</div>
+                                    <code className="text-brand-green">$ npm view slotscribe version</code>
+                                </div>
+                                <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 font-mono text-sm">
+                                    <div className="text-gray-500 mb-2"># Verify installed version</div>
+                                    <code className="text-brand-green">$ npm ls slotscribe</code>
                                 </div>
                             </div>
                         </section>
@@ -239,9 +305,9 @@ await connection.sendTransaction(tx, [payer]);`}
                                 <span className="text-2xl font-black text-brand-green">npx</span>
                             </div>
                             <div>
-                                <h4 className="text-xl font-black mb-2">Local vs Registry</h4>
+                                <h4 className="text-xl font-black mb-2">Local Repo vs npm Package</h4>
                                 <p className="text-white/60 text-sm font-medium leading-relaxed">
-                                    In this repo, use local imports from <code>src/slotscribe</code> or the workspace alias <code>slotscribe</code>. For external projects, install from npm using <code>slotscribe</code>.
+                                    Inside this repository, you can use local imports from <code>src/slotscribe</code>. In external projects, always install from npm using <code>slotscribe@latest</code>.
                                 </p>
                             </div>
                         </div>
@@ -316,6 +382,71 @@ console.log('Trace Hash:', payloadHash);`}
                                     </p>
                                 </div>
                             </div>
+                        </section>
+                    </div>
+                );
+            case 'ai-integration':
+                return (
+                    <div className="space-y-12">
+                        <section>
+                            <div className="text-sm font-bold text-brand-green uppercase tracking-widest mb-4">SDK Integration</div>
+                            <h1 className="text-4xl md:text-5xl font-black text-brand-dark tracking-tight mb-8">
+                                AI Integration
+                            </h1>
+                            <p className="text-lg text-gray-500 font-medium leading-relaxed mb-6">
+                                If your agent code is generated by AI, use a fixed system prompt so every generated flow includes trace recording, memo anchoring, and verification links by default.
+                            </p>
+                        </section>
+
+                        <section className="space-y-6">
+                            <h2 className="text-2xl font-black text-brand-dark tracking-tight">Agent System Prompt (Copy-Paste)</h2>
+                            <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 md:p-8">
+                                <pre className="font-mono text-xs md:text-sm text-gray-300 leading-relaxed overflow-x-auto">
+                                    {`You are a Solana trading agent. Every transfer/swap/stake tx MUST:
+1) Create SlotScribeRecorder(intent, cluster)
+2) Fill txSummary BEFORE finalizePayloadHash()
+3) Anchor memo: SS1 payload=<hash>
+4) Send transaction
+5) attachOnChain(signature, { status: 'confirmed' })
+6) Upload trace to https://slotscribe.xyz/api/trace
+7) Return signature, payloadHash, verifyUrl
+
+Use package: slotscribe
+Do not remove memo or skip upload.`}
+                                </pre>
+                            </div>
+                        </section>
+
+                        <section className="space-y-6">
+                            <h2 className="text-2xl font-black text-brand-dark tracking-tight">Minimal Generated Flow</h2>
+                            <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden border border-white/5 shadow-2xl p-6 md:p-8">
+                                <pre className="font-mono text-xs md:text-sm text-gray-300 leading-relaxed overflow-x-auto">
+                                    {`import { SlotScribeRecorder } from 'slotscribe';
+
+const recorder = new SlotScribeRecorder({ intent: 'AI-generated action', cluster: 'devnet' });
+recorder.setTxSummary({ cluster: 'devnet', feePayer, to, lamports, programIds });
+const hash = recorder.finalizePayloadHash();
+tx.add(buildMemoIx(\`SS1 payload=\${hash}\`));
+const signature = await connection.sendTransaction(tx, [payer]);
+recorder.attachOnChain(signature, { status: 'confirmed' });
+const trace = recorder.buildTrace();
+await uploadTrace(trace, { baseUrl: 'https://slotscribe.xyz' });`}
+                                </pre>
+                            </div>
+                        </section>
+
+                        <section className="p-6 md:p-8 bg-brand-green/5 border border-brand-green/20 rounded-2xl">
+                            <h3 className="font-black text-brand-dark mb-2 text-sm uppercase tracking-widest">Full Prompt Reference</h3>
+                            <p className="text-sm text-gray-500 font-medium leading-relaxed mb-4">
+                                Use the complete prompt template for coding agents and MCP tools from the official guide.
+                            </p>
+                            <Link
+                                href="https://github.com/kledx/SlotScribe/blob/main/docs/AI_Agent_System_Prompt.md"
+                                target="_blank"
+                                className="inline-flex items-center gap-2 text-sm font-black text-brand-green hover:underline"
+                            >
+                                Open AI_Agent_System_Prompt.md <ExternalLink className="w-4 h-4" />
+                            </Link>
                         </section>
                     </div>
                 );
@@ -656,11 +787,10 @@ tx.add(buildMemoIx(\`SS1 payload=\${payloadHash}\`));`}
                                     setActiveId(item.id);
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
-                                className={`pl-4 text-left text-sm font-bold transition-all ${
-                                    activeId === item.id
+                                className={`pl-4 text-left text-sm font-bold transition-all ${activeId === item.id
                                         ? 'text-brand-green border-l-2 border-brand-green -ml-[2px]'
                                         : 'text-gray-400 hover:text-brand-dark'
-                                }`}
+                                    }`}
                             >
                                 {item.title}
                             </button>
