@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+const FIXED_PROJECT_URL = 'https://colosseum.com/agent-hackathon/projects/slotscribe';
+
 export async function GET() {
     try {
         const configPath = process.env.AGENT_CONFIG_PATH || path.join(process.cwd(), '.colosseum-agent.json');
@@ -20,7 +22,7 @@ export async function GET() {
             return NextResponse.json({ error: 'API Key not configured' }, { status: 400 });
         }
 
-        const [statusRes, postsRes] = await Promise.all([
+        const [statusRes, postsRes, projectRes] = await Promise.all([
             fetch('https://agents.colosseum.com/api/agents/status', {
                 headers: {
                     'Authorization': `Bearer ${config.apiKey}`,
@@ -32,7 +34,13 @@ export async function GET() {
                     'Authorization': `Bearer ${config.apiKey}`,
                     'Content-Type': 'application/json',
                 },
-            })
+            }),
+            fetch('https://agents.colosseum.com/api/my-project', {
+                headers: {
+                    'Authorization': `Bearer ${config.apiKey}`,
+                    'Content-Type': 'application/json',
+                },
+            }),
         ]);
 
         if (!statusRes.ok) {
@@ -42,6 +50,7 @@ export async function GET() {
 
         const statusData = await statusRes.json();
         const postsData = await postsRes.json();
+        const projectData = projectRes.ok ? await projectRes.json() : null;
 
         const allPosts = postsData.posts || [];
         const myName = 'SlotScribe-Agent';
@@ -61,6 +70,9 @@ export async function GET() {
         };
         const pendingActions = config.pendingActions || [];
         const recentInteractions = interactions.slice(-5).reverse();
+        const remoteProject = projectData?.project || projectData || null;
+        const remoteProjectId = remoteProject?.id || null;
+        const projectUrl = FIXED_PROJECT_URL;
 
         // Enrich with local config data (heartbeat count, queue status, and KPI snapshot)
         return NextResponse.json({
@@ -70,6 +82,12 @@ export async function GET() {
             repliedPostIds: repliedIds, // IDs of posts I've replied to
             interactions: interactions, // Detailed replies with body
             recentInteractions, // Last 5 interactions
+            project: remoteProject ? {
+                id: remoteProjectId,
+                name: remoteProject.name || null,
+                status: remoteProject.status || statusData?.engagement?.projectStatus || null,
+                url: projectUrl,
+            } : null,
             localConfig: {
                 heartbeatCount: config.heartbeatCount || 0,
                 lastHeartbeatAt: config.lastHeartbeatAt || null,

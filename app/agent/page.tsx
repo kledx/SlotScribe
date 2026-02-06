@@ -17,7 +17,8 @@ import {
     Globe,
     User,
     UserCheck,
-    Reply
+    Reply,
+    Link2
 } from 'lucide-react';
 
 interface Post {
@@ -79,6 +80,12 @@ interface AgentStatus {
         replyBody: string;
         repliedAt: string;
     }[];
+    project: {
+        id: string | null;
+        name: string | null;
+        status: string | null;
+        url: string | null;
+    } | null;
 }
 
 export default function AgentDashboard() {
@@ -261,15 +268,30 @@ export default function AgentDashboard() {
                                 <div>
                                     <p className="text-white/40 text-[10px] uppercase font-black mb-2 italic">Project ID</p>
                                     <code className="bg-white/10 px-4 py-2 rounded-xl text-brand-green font-mono text-xs border border-white/5 block truncate w-full max-w-[150px]">
-                                        {data.localConfig.projectId || 'NOT_CREATED'}
+                                        {data.project?.id || data.localConfig.projectId || 'NOT_CREATED'}
                                     </code>
+                                    <div className="mt-3">
+                                        <p className="text-white/40 text-[10px] uppercase font-black mb-1 italic">Project URL</p>
+                                        {data.project?.url ? (
+                                            <Link
+                                                href={data.project.url}
+                                                target="_blank"
+                                                className="inline-flex items-center gap-1 text-[11px] font-black text-brand-green hover:underline"
+                                            >
+                                                Open Project
+                                                <ExternalLink className="w-3 h-3" />
+                                            </Link>
+                                        ) : (
+                                            <p className="text-[11px] text-white/50">Unavailable</p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="mt-8">
                                     <p className="text-white/40 text-[10px] uppercase font-black mb-1">Status</p>
                                     <p className="text-2xl font-black uppercase text-brand-green animate-pulse inline-flex items-center gap-2">
                                         <span className="w-2 h-2 rounded-full bg-brand-green"></span>
-                                        {data.engagement.projectStatus}
+                                        {data.project?.status || data.engagement.projectStatus}
                                     </p>
                                 </div>
                             </div>
@@ -466,6 +488,27 @@ export default function AgentDashboard() {
                                     {data.localConfig.todayMetrics.queueRetries} / {data.localConfig.todayMetrics.queueFailures}
                                 </span>
                             </div>
+                        </div>
+                        <div className="p-4 bg-white/60 rounded-2xl border border-brand-dark/5 mb-6">
+                            <div className="flex items-center justify-between gap-3">
+                                <span className="text-xs font-bold text-brand-dark">Project URL</span>
+                                {data.project?.url ? (
+                                    <Link
+                                        href={data.project.url}
+                                        target="_blank"
+                                        className="inline-flex items-center gap-1 text-[11px] font-black text-brand-green hover:underline"
+                                    >
+                                        Open
+                                        <ExternalLink className="w-3 h-3" />
+                                    </Link>
+                                ) : (
+                                    <span className="text-[11px] font-bold text-brand-dark/40">Unavailable</span>
+                                )}
+                            </div>
+                            <p className="text-[11px] text-brand-dark/60 mt-2 truncate flex items-center gap-2">
+                                <Link2 className="w-3 h-3 shrink-0 text-brand-dark/30" />
+                                {data.project?.url || 'No public project link returned by Colosseum API'}
+                            </p>
                         </div>
                         <h5 className="font-black text-[10px] uppercase tracking-widest text-brand-dark/40 mb-3">Recent Replies</h5>
                         <div className="space-y-2 max-h-44 overflow-auto pr-1">
