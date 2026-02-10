@@ -16,8 +16,8 @@ const API_TIMEOUT_MS = Number.parseInt(process.env.COLOSSEUM_API_TIMEOUT_MS || '
 const MAX_RETRIES = Number.parseInt(process.env.COLOSSEUM_API_RETRIES || '2', 10);
 const RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504]);
 const RETRY_QUEUE_LIMIT = 100;
-const ACTIVE_SOCIAL_TARGETS = Number.parseInt(process.env.AGENT_ACTIVE_SOCIAL_TARGETS || '4', 10);
-const DEFAULT_SOCIAL_TARGETS = Number.parseInt(process.env.AGENT_DEFAULT_SOCIAL_TARGETS || '2', 10);
+const ACTIVE_SOCIAL_TARGETS = Number.parseInt(process.env.AGENT_ACTIVE_SOCIAL_TARGETS || '6', 10);
+const DEFAULT_SOCIAL_TARGETS = Number.parseInt(process.env.AGENT_DEFAULT_SOCIAL_TARGETS || '4', 10);
 const AUTO_VOTE_ENABLED = process.env.AGENT_AUTO_VOTE === '1' || process.env.AGENT_AUTO_VOTE === 'true';
 const POSTS_MODEL = process.env.OPENAI_MODEL_FOR_POSTS || process.env.OPENAI_MODEL || 'google/gemini-2.0-flash-001';
 const REPLIES_MODEL = process.env.OPENAI_MODEL_FOR_REPLIES || process.env.OPENAI_MODEL || 'google/gemini-2.0-flash-001';
@@ -284,8 +284,8 @@ function getSleepDurationMs(currentMode: AgentMode): number {
     }
     const hourUtc = new Date().getUTCHours();
     const highTraffic = hourUtc >= 12 && hourUtc <= 23;
-    const minMinutes = highTraffic ? 10 : 20;
-    const maxMinutes = highTraffic ? 25 : 35;
+    const minMinutes = highTraffic ? 2 : 20;
+    const maxMinutes = highTraffic ? 4 : 35;
     return minMinutes * 60 * 1000 + Math.random() * (maxMinutes - minMinutes) * 60 * 1000;
 }
 
@@ -338,9 +338,9 @@ function buildProjectFacts(draft: ProjectData): string {
     return facts.map((line, idx) => `${idx + 1}. ${line}`).join('\n');
 }
 
-function validateGeneratedText(text: string, requireQuestion: boolean): { ok: boolean; reason?: string } {
+function validateGeneratedText(text: string, requireQuestion: boolean, requireMention: boolean = true): { ok: boolean; reason?: string } {
     const lower = text.toLowerCase();
-    if (!lower.includes('slotscribe')) {
+    if (requireMention && !lower.includes('slotscribe')) {
         return { ok: false, reason: 'Generated text must mention SlotScribe explicitly.' };
     }
     if (BANNED_CLAIMS.some((claim) => lower.includes(claim))) {
@@ -594,7 +594,7 @@ async function autoForumUpdate(): Promise<unknown> {
     const config = loadConfig();
     const lastPostAt = config.lastForumPostAt ? new Date(config.lastForumPostAt).getTime() : 0;
     const now = Date.now();
-    const cooldownMs = options.mode === 'active' ? 4 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000;
+    const cooldownMs = options.mode === 'active' ? 10 * 60 * 1000 : 6 * 60 * 60 * 1000;
 
     if (now - lastPostAt < cooldownMs) {
         console.log('Skipping autonomous post: cooldown not reached.');
@@ -727,7 +727,7 @@ async function socialInteract(): Promise<void> {
     const draft = await getProjectDataFromDraft();
     const projectFacts = buildProjectFacts(draft);
 
-    const data = await apiRequest('/forum/posts?sort=new&limit=25');
+    const data = await apiRequest('/forum/posts?sort=new&limit=50');
     const posts = extractPosts(data);
     const myName = 'SlotScribe-Agent';
     const targets = posts
@@ -761,12 +761,19 @@ async function socialInteract(): Promise<void> {
                 continue;
             }
 
-            reply = appendCtaQuestion(reply, 'Would this kind of verification help your users trust results faster?');
+            // Enforce hard word count limit to keep replies concise
+            const wordCount = reply.split(/\s+/).length;
+            if (wordCount > 80) {
+                console.log(`Skip post ${post.id}: reply too long (${wordCount} words, max 80).`);
+                continue;
+            }
+
+            reply = appendCtaQuestion(reply, 'What trade-offs did you weigh when choosing this approach?');
             if (isDuplicateReply(config, reply)) {
                 console.log(`Skip post ${post.id}: candidate reply too similar to recent history.`);
                 continue;
             }
-            const replyValidation = validateGeneratedText(reply, true);
+            const replyValidation = validateGeneratedText(reply, true, false);
             if (!replyValidation.ok) {
                 console.log(`Skip post ${post.id}: ${replyValidation.reason}`);
                 continue;
@@ -845,7 +852,7 @@ async function runAutonomousLoop(): Promise<void> {
                 await socialInteract();
             }
 
-            const postingProbability = options.mode === 'active' ? 0.55 : 0.2;
+            const postingProbability = options.mode === 'active' ? 1.0 : 0.40;
             if (Math.random() < postingProbability) {
                 await autoForumUpdate();
             }
